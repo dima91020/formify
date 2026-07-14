@@ -1,5 +1,3 @@
-
-```md
 # Formify
 
 A modern SaaS platform for creating dynamic forms and surveys. The key feature of this project is the visual logic builder (Logic Map), which allows users to configure complex branching scenarios based on user responses.
