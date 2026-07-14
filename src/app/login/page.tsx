@@ -9,7 +9,7 @@ export default function LoginPage() {
 
                 <form action={async () => {
                     "use server";
-                    await signIn("google", { redirectTo: "/builder" });
+                    await signIn("google", { redirectTo: "/dashboard" });
                 }}>
                     <button className="mb-4 bg-gray-800 w-full border-l rounded-md py-2 text-center hover:bg-gray-500 transition-colors">
                         Continue with Google
@@ -18,7 +18,7 @@ export default function LoginPage() {
 
                 <form action={async () => {
                     "use server";
-                    await signIn("github", { redirectTo: "/builder" });
+                    await signIn("github", { redirectTo: "/dashboard" });
                 }}>
                     <button className="bg-gray-800 w-full border-l rounded-md py-2 text-center hover:bg-gray-500 transition-colors">
                         Continue with Github
