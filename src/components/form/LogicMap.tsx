@@ -1,38 +1,32 @@
-import {useMemo} from "react";
-import {useAppSelector} from "@/store/hooks";
-import {ReactFlow, Background, Controls} from "@xyflow/react"
+import { useMemo } from "react";
+import { useAppSelector } from "@/store/hooks";
+import { Background, Controls, ReactFlow } from "@xyflow/react";
 import QuestionNode from "@/components/form/QuestionNode";
-// import dagre from "@dagrejs/dagre";
+import dagre from "@dagrejs/dagre";
+
+const nodeTypes = {
+    questionCard: QuestionNode,
+};
 
 export default function LogicMap() {
     const questions = useAppSelector((state) => state.form.questions);
-    // const graph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-    //
-    // const nodeWidth = 132;
-    // const nodeHeight = 36;
-    //
-    // graph.setGraph({ rankdir: 'LR' });
 
-
-    const questionNode = {
-        questionCard: QuestionNode,
-    }
-
-    const nodes = useMemo(() => questions
-        .map((q, index) => (
-            { id: q.id,
-                position: { x: index * 250, y: 0 },
-                type: "questionCard",
-                data: {
-                    title: q.title,
-                    type: q.type,
-                    options: q.options,
+    const initialNodes = useMemo(() => questions
+            .map((q) => (
+                {
+                    id: q.id,
+                    position: { x: 0, y: 0 },
+                    type: "questionCard",
+                    data: {
+                        title: q.title,
+                        type: q.type,
+                        options: q.options,
+                    }
                 }
-            }
-        ))
-        , [questions]
-    );
-    const edges = useMemo(() => questions
+            ))
+        , [questions]);
+
+    const initialEdges = useMemo(() => questions
             .flatMap((q) => {
                 if (!q.condition) return [];
 
@@ -44,12 +38,49 @@ export default function LogicMap() {
                     animated: true,
                 }];
             })
-        , [questions]
-    );
+        , [questions]);
+
+    const { layoutedNodes, layoutedEdges } = useMemo(() => {
+        const graph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+
+        const nodeWidth = 300;
+        const nodeHeight = 200;
+
+        graph.setGraph({ rankdir: 'LR' });
+
+        initialNodes.forEach((node) => {
+            graph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+        });
+
+        initialEdges.forEach((edge) => {
+            graph.setEdge(edge.source, edge.target);
+        });
+
+        dagre.layout(graph);
+
+        const newNodes = initialNodes.map((node) => {
+            const nodeWithPosition = graph.node(node.id);
+
+            return {
+                ...node,
+                position: {
+                    x: nodeWithPosition.x - nodeWidth / 2,
+                    y: nodeWithPosition.y - nodeHeight / 2,
+                }
+            };
+        });
+
+        return { layoutedNodes: newNodes, layoutedEdges: initialEdges };
+    }, [initialNodes, initialEdges]);
 
     return (
         <div className="w-full h-full">
-            <ReactFlow nodes={nodes} edges={edges} fitView nodeTypes={questionNode}>
+            <ReactFlow
+                nodes={layoutedNodes}
+                edges={layoutedEdges}
+                nodeTypes={nodeTypes}
+                fitView
+            >
                 <Background />
                 <Controls />
             </ReactFlow>
