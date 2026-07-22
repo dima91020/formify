@@ -72,7 +72,7 @@ export default function FormCard({ form }: { form: Form }) {
             <h1 className="font-bold text-xl mb-2 text-gray-800">{form.title}</h1>
             <p className="mb-6 text-gray-500">Created: {form.createdAt.toLocaleDateString('uk-UA')}</p>
             <div className="flex gap-3 flex-col">
-                <Link href={`/builder/${form.id}`} className="text-center text-gray-800 bg-gray-300 py-2 flex-1 rounded-md hover:bg-gray-200 transition-colors">
+                <Link href={`/builder/${form.id}?tab=questions`} className="text-center text-gray-800 bg-gray-300 py-2 flex-1 rounded-md hover:bg-gray-200 transition-colors">
                     Edit
                 </Link>
                 <Link href={`/f/${form.id}`} className="text-center text-white bg-gray-800 py-2 flex-1 rounded-md hover:bg-gray-600 transition-colors">

@@ -9,7 +9,7 @@ const questionSchema = z.object({
     options: z.array(z.object({ id: z.string(), value: z.string() })).optional(),
     condition: z.object({
         targetQuestionId: z.string(),
-        expectedValue: z.string(),
+        expectedValue: z.union([z.string(), z.array(z.string())]),
     }).optional(),
 });
 
@@ -30,14 +30,6 @@ export const createFormSchema = z.object({
        .max(100, "Title should be less than 100 characters"),
    schema: formContentSchema,
 });
-
-export const saveAnswersSchema = z.record(
-    z.string(),
-    z.union([
-        z.string().min(1, 'Answers should be at least 1 character'),
-        z.array(z.string())
-    ])
-);
 
 export type Question = z.infer<typeof questionSchema>;
 export type LogicRule = z.infer<typeof logicRuleSchema>;

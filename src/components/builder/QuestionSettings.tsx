@@ -2,11 +2,11 @@
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateQuestion } from "@/store/slices/formSlice";
-import {hasDuplicateOptions} from "@/utils/validators";
-import {RiDeleteBin5Line} from "react-icons/ri";
-import {ChangeEvent} from "react";
-import {Question} from "@/schemas/form.schema";
-import {Options} from "@/components/form/FormOptions";
+import { hasDuplicateOptions } from "@/utils/validators";
+import { RiDeleteBin5Line } from "react-icons/ri";
+import { ChangeEvent } from "react";
+import { Question } from "@/schemas/form.schema";
+import { Options } from "@/components/form/FormOptions";
 
 export default function QuestionSettings() {
     const questions = useAppSelector(state => state.form.questions);
@@ -14,7 +14,7 @@ export default function QuestionSettings() {
     const dispatch = useAppDispatch();
 
     const activeQuestion = questions.find((question) => question.id === activeQuestionId);
-    const activeQuestionIndex = questions.findIndex((question) => question.id ===activeQuestionId)
+    const activeQuestionIndex = questions.findIndex((question) => question.id === activeQuestionId);
     const activeQuestionHasCondition = Boolean(activeQuestion?.condition);
 
     if (!activeQuestion) {
@@ -57,14 +57,14 @@ export default function QuestionSettings() {
                 }
             }));
         } else {
-            const previousQuestionId = questions[activeQuestionIndex - 1].id;
+            const previousQuestion = questions[activeQuestionIndex - 1];
 
             dispatch(updateQuestion({
                 id: activeQuestion.id,
                 updates: {
                     condition: {
-                        targetQuestionId: previousQuestionId,
-                        expectedValue: "",
+                        targetQuestionId: previousQuestion.id,
+                        expectedValue: previousQuestion.type === Options.CHECKBOX ? [] : "",
                     }
                 }
             }))
@@ -96,10 +96,10 @@ export default function QuestionSettings() {
                         type="checkbox"
                         className="peer appearance-none w-11 h-5 bg-slate-200 border border-slate-300 rounded-full checked:bg-slate-800 checked:border-slate-800 cursor-pointer transition-colors duration-300"
                         checked={activeQuestion.required}
-
                         onChange={e =>
                             dispatch(updateQuestion({ id: activeQuestion.id, updates: { required: e.target.checked } }))
-                        }                    />
+                        }
+                    />
                     <span
                         className="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 pointer-events-none"
                     />
@@ -154,12 +154,17 @@ export default function QuestionSettings() {
                             onChange={(e) => {
                                 if (!activeQuestion.condition) return;
 
+                                const newTargetId = e.target.value;
+                                const targetQuestion = questions.find(q => q.id === newTargetId);
+                                const isTargetCheckbox = targetQuestion?.type === Options.CHECKBOX;
+
                                 dispatch(updateQuestion({
                                     id: activeQuestion.id,
                                     updates: {
                                         condition: {
                                             ...activeQuestion.condition,
-                                            targetQuestionId: e.target.value,
+                                            targetQuestionId: newTargetId,
+                                            expectedValue: isTargetCheckbox ? [] : "",
                                         }
                                     }
                                 }))
@@ -174,24 +179,106 @@ export default function QuestionSettings() {
                         </select>
 
                         <label className="text-md font-medium text-gray-700">equals to</label>
-                        <input
-                            type="text"
-                            className="w-full border p-2.5 rounded-md mt-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-black"
-                            value={activeQuestion.condition?.expectedValue}
-                            onChange={(e) => {
-                                if (!activeQuestion.condition) return;
+                        {questions
+                            .filter((q) => q.id === activeQuestion.condition?.targetQuestionId)
+                            .map((question) => {
+                                if (question.type === Options.CHOICE) {
+                                    return (
+                                        <div key={question.id} className="flex flex-col gap-2">
+                                            {question.options?.map(({ id, value }, index) => (
+                                                <div key={index} className="flex items-center gap-3">
+                                                    <input
+                                                        name={question.id}
+                                                        type="radio"
+                                                        id={`${question.id}-choice-${index}`}
+                                                        className="accent-black w-4 h-4 cursor-pointer"
+                                                        checked={activeQuestion.condition?.expectedValue === value}
+                                                        onChange={() => {
+                                                            if (!activeQuestion.condition) return;
 
-                                dispatch(updateQuestion({
-                                    id: activeQuestion.id,
-                                    updates: {
-                                        condition: {
-                                            ...activeQuestion.condition,
-                                            expectedValue: e.target.value,
-                                        }
-                                    }
-                                }))
-                            }}
-                        />
+                                                            dispatch(updateQuestion({
+                                                                id: activeQuestion.id,
+                                                                updates: {
+                                                                    condition: {
+                                                                        ...activeQuestion.condition,
+                                                                        expectedValue: value,
+                                                                    }
+                                                                }
+                                                            }))
+                                                        }}
+                                                    />
+                                                    <label htmlFor={`${question.id}-choice-${index}`} className="cursor-pointer text-gray-700">{value}</label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                } else if (question.type === Options.CHECKBOX) {
+                                    const currentExpectedValue = activeQuestion.condition?.expectedValue;
+                                    const isExpectedValueArray = Array.isArray(currentExpectedValue);
+
+                                    return (
+                                        <div key={question.id} className="flex flex-col gap-2">
+                                            {question.options?.map(({ id, value }, index) => (
+                                                <div key={index} className="flex items-center gap-3">
+                                                    <input
+                                                        name={question.id}
+                                                        type="checkbox"
+                                                        id={`${question.id}-checkbox-${index}`}
+                                                        className="accent-black w-4 h-4 cursor-pointer"
+                                                        checked={isExpectedValueArray ? currentExpectedValue.includes(value) : false}
+                                                        onChange={() => {
+                                                            if (!activeQuestion.condition) return;
+
+                                                            let currentValue = Array.isArray(activeQuestion.condition.expectedValue)
+                                                                ? activeQuestion.condition.expectedValue
+                                                                : [];
+
+                                                            if (currentValue.includes(value)) {
+                                                                currentValue = currentValue.filter((v) => v !== value);
+                                                            } else {
+                                                                currentValue = [...currentValue, value];
+                                                            }
+
+                                                            dispatch(updateQuestion({
+                                                                id: activeQuestion.id,
+                                                                updates: {
+                                                                    condition: {
+                                                                        ...activeQuestion.condition,
+                                                                        expectedValue: currentValue,
+                                                                    }
+                                                                }
+                                                            }))
+                                                        }}
+                                                    />
+                                                    <label htmlFor={`${question.id}-checkbox-${index}`} className="cursor-pointer text-gray-700">{value}</label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                } else {
+                                    return (
+                                        <input
+                                            key={question.id}
+                                            type="text"
+                                            className="w-full border p-2.5 rounded-md mt-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-black"
+                                            value={typeof activeQuestion.condition?.expectedValue === "string" ? activeQuestion.condition.expectedValue : ""}
+                                            onChange={(e) => {
+                                                if (!activeQuestion.condition) return;
+
+                                                dispatch(updateQuestion({
+                                                    id: activeQuestion.id,
+                                                    updates: {
+                                                        condition: {
+                                                            ...activeQuestion.condition,
+                                                            expectedValue: e.target.value,
+                                                        }
+                                                    }
+                                                }))
+                                            }}
+                                        />
+                                    );
+                                }
+                            })}
 
                         <button
                             className="flex flex-row items-center justify-center gap-2 text-red-400 cursor-pointer"
