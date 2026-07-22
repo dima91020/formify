@@ -1,6 +1,6 @@
 'use server'
 
-import {saveAnswersSchema} from "@/schemas/form.schema";
+import {saveAnswersSchema} from "@/schemas/response.schema";
 import {prisma} from "@/lib/prisma";
 
 export type Answers = Record<string, string | string[]>;

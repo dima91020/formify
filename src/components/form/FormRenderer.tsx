@@ -1,12 +1,27 @@
 'use client'
 
 import { Question } from "@/schemas/form.schema";
-import { useState } from "react";
-import { Answers, submitFormResponse } from "@/actions/response.actions";
+import {useEffect, useState} from "react";
+import { submitFormResponse } from "@/actions/response.actions";
 import { FaSpinner } from "react-icons/fa";
+import {useAppDispatch, useAppSelector} from "@/store/hooks";
+import {
+    restoreProgress,
+    setCurrentQuestionId,
+    toggleNextQuestion,
+    togglePrevQuestion,
+    updateAnswer,
+} from "@/store/slices/responseSlice";
+import {IoIosArrowBack} from "react-icons/io";
+import {Options} from "@/components/form/FormOptions";
+import {Answers} from "@/schemas/response.schema";
 
 export default function FormRenderer({ questions, formId }: { questions: Question[], formId: string }) {
-    const [answers, setAnswers] = useState<Answers>({});
+    const currentQuestionId = useAppSelector((state) => state.response.currentQuestionId);
+    const answers = useAppSelector((state) => state.response.answers);
+    const history = useAppSelector((state) => state.response.history);
+    const dispatch = useAppDispatch();
+
     const [errors, setErrors] = useState<string[]>([]);
 
     const [globalError, setGlobalError] = useState<string | null>(null);
@@ -14,61 +29,71 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
+    useEffect(() => {
+        const progress = window.localStorage.getItem("surveyProgress");
+
+        if (progress) {
+            dispatch(restoreProgress(JSON.parse(progress)));
+        } else {
+            dispatch(setCurrentQuestionId(questions[0].id))
+        }
+    }, []);
+
     const handleCheckboxChange = (questionId: string, optionValue: string) => {
         setErrors(prev => prev.filter((v) => v !== questionId));
         setGlobalError(null);
 
-        setAnswers((prev) => {
-            const currentSelected = (prev[questionId] as string[]) || [];
+        const currentSelected = (answers[questionId] as string[]) || [];
 
-            if (currentSelected.includes(optionValue)) {
-                return { ...prev, [questionId]: currentSelected.filter((item) => item !== optionValue) }
-            } else {
-                return { ...prev, [questionId]: [...currentSelected, optionValue] };
-            }
-        });
+        if (currentSelected.includes(optionValue)) {
+            dispatch(updateAnswer({ questionId, value: currentSelected.filter((item) => item !== optionValue) }));
+        } else {
+            dispatch(updateAnswer({ questionId, value: [...currentSelected, optionValue]}));
+        }
     }
 
     const handleTextChange = (questionId: string, value: string) => {
         setErrors(prev => prev.filter((v) => v !== questionId));
         setGlobalError(null);
 
-        setAnswers((prev) => ({ ...prev, [questionId]: value }));
+        dispatch(updateAnswer({ questionId, value: value.trim() }));
     }
 
     const handleChoiceChange = (questionId: string, value: string) => {
         setErrors(prev => prev.filter((v) => v !== questionId));
         setGlobalError(null);
 
-        setAnswers((prev) => {
-            return { ...prev, [questionId]: value };
-        });
+        dispatch(updateAnswer({ questionId, value: value.trim() }));
     }
 
     async function handleSubmit() {
         setErrors([]);
         setGlobalError(null);
 
-        const requiredQuestions = questions.filter((question) => {
-            if (!question.required) return false;
+        if (!currentQuestionId) return;
 
-            const answer = answers[question.id];
+        if (questions[findQuestionIndexById(currentQuestionId)!].required) {
+            if (!answers[currentQuestionId] || !answers[currentQuestionId].length) {
+                setErrors((prev) => [...prev, currentQuestionId]);
 
-            if (!answer) return true;
-            return Array.isArray(answer) && answer.length === 0;
-        });
-
-        if (requiredQuestions.length > 0) {
-            setErrors(requiredQuestions.map((question) => question.id));
-            return;
+                return;
+            }
         }
 
         try {
             setIsSubmitting(true);
-            const result = await submitFormResponse(formId, answers);
+
+            const validIds = [...history, currentQuestionId];
+
+            const answersToSave = Object.fromEntries(
+                Object.entries(answers).filter(([key]) => validIds.includes(key))
+            ) as Answers;
+
+            const result = await submitFormResponse(formId, answersToSave);
 
             if (result.success) {
                 setIsSuccess(true);
+                window.localStorage.removeItem("surveyProgress");
             } else {
                 setGlobalError("Failed to save your response. Please try again.");
             }
@@ -78,6 +103,57 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
             setIsSubmitting(false);
         }
     }
+
+    function findQuestionIndexById(questionId: string) {
+        const index = questions.findIndex((q) => q.id === questionId);
+
+        return index === -1 ? null : index;
+    }
+
+    function getNextQuestion() {
+        if (!currentQuestionId) return null;
+
+        const currentIndex = findQuestionIndexById(currentQuestionId);
+        if (currentIndex === null) return null;
+
+        for (let i = currentIndex + 1; i < questions.length; i++) {
+            const question = questions[i];
+
+            if (!question.condition) {
+                return question.id;
+            }
+
+            const targetAnswers = answers[question.condition.targetQuestionId];
+            const expectedValues = question.condition.expectedValue;
+            const targetQuestion = questions.find((q) => q.id === question.condition?.targetQuestionId);
+
+            if (targetQuestion?.type === Options.CHECKBOX) {
+                if (!Array.isArray(targetAnswers) || !Array.isArray(expectedValues)) {
+                    continue;
+                }
+
+                if (targetAnswers.length !== expectedValues.length) {
+                    continue;
+                }
+
+                const isMatch = expectedValues.every((option: string) =>
+                    targetAnswers.map(String).includes(String(option))
+                );
+
+                if (isMatch) {
+                    return question.id;
+                }
+            } else if (targetQuestion?.type === Options.TEXT || targetQuestion?.type === Options.CHOICE) {
+                if (String(targetAnswers) === String(expectedValues)) {
+                    return question.id;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    const nextId = getNextQuestion();
 
     if (isSuccess) {
         return (
@@ -90,10 +166,12 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
 
     return (
         <div className="flex flex-col gap-8 mt-8">
-            {questions.map((question, index) => (
+            {questions
+                .filter((q) => q.id === currentQuestionId)
+                .map((question) => (
                 <div key={question.id} className="flex flex-col gap-3">
                     <label className="text-lg text-gray-500">
-                        {index + 1}. {question.title} {question.required && (<span className="text-red-500">*</span>)}
+                        {findQuestionIndexById(question.id)! + 1}. {question.title} {question.required && (<span className="text-red-500">*</span>)}
                     </label>
 
                     {question.type === "TEXT" && (
@@ -108,7 +186,7 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
 
                     {question.type === "CHOICE" && (
                         <div className="flex flex-col gap-2">
-                            {question.options?.map(({ id, value }, index) => (
+                            {question.options?.map(({ value }, index) => (
                                 <div key={index} className="flex items-center gap-3">
                                     <input
                                         name={question.id}
@@ -126,7 +204,7 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
 
                     {question.type === "CHECKBOX" && (
                         <div className="flex flex-col gap-2">
-                            {question.options?.map(({ id, value }, index) => (
+                            {question.options?.map(({ value }, index) => (
                                 <div key={index} className="flex items-center gap-3">
                                     <input
                                         name={question.id}
@@ -147,25 +225,56 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
                 </div>
             ))}
 
-            <div className="flex flex-col gap-3 self-start w-full sm:w-auto mt-4">
-                {globalError && (
-                    <p className="text-red-500 text-sm">{globalError}</p>
-                )}
+            {globalError && (
+                <p className="text-red-500 text-sm">{globalError}</p>
+            )}
 
+            <div className="flex flex-row gap-3 justify-between w-full sm:w-auto mt-4 md:px-8 lg:px-14 xl:px-22">
                 <button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 w-full transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    onClick={() => dispatch(togglePrevQuestion())}
+                    disabled={!history.length}
                 >
-                    {isSubmitting ? (
-                        <>
-                            <FaSpinner className="animate-spin" />
-                            <span>Submitting...</span>
-                        </>
-                    ) : (
-                        "Submit"
-                    )}
+                    <IoIosArrowBack />
                 </button>
+
+                {!nextId ? (
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className="bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 flex-1 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <FaSpinner className="animate-spin" />
+                                <span>Submitting...</span>
+                            </>
+                        ) : (
+                            "Submit"
+                        )}
+                    </button>
+                ) : (
+                    <button
+                        className="bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        onClick={() => {
+                            if (!currentQuestionId) return;
+
+                            if (questions[findQuestionIndexById(currentQuestionId)!].required) {
+                                if (!answers[currentQuestionId] || !answers[currentQuestionId].length) {
+                                    setErrors((prev) => [...prev, currentQuestionId]);
+
+                                    return;
+                                }
+                            }
+
+                            dispatch(setCurrentQuestionId(nextId));
+                            dispatch(toggleNextQuestion(currentQuestionId));
+                        }}
+                        disabled={!nextId}
+                    >
+                        <IoIosArrowBack className="rotate-180" />
+                    </button>
+                )}
             </div>
         </div>
     );
