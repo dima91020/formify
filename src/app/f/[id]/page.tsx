@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import FormRenderer from "@/components/form/FormRenderer";
+import FormRenderer from "@/components/renderer/FormRenderer";
 import {CreateFormInput} from "@/schemas/form.schema";
 import {auth} from "@/auth";
 

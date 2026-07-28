@@ -13,7 +13,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import BuilderHeader from "@/components/builder/BuilderHeader";
 import {useSearchParams} from "next/navigation";
 import {hasDuplicateOptions} from "@/utils/validators";
-import LogicMap from "@/components/form/LogicMap";
+import LogicMap from "@/components/builder/LogicMap";
 
 export enum SYNC_STATUS {
     Saved = "Saved",

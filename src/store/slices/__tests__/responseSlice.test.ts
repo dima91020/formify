@@ -1,4 +1,4 @@
-import responseReducer, { updateAnswer, ResponseState, toggleNextQuestion, togglePrevQuestion } from './responseSlice';
+import responseReducer, { updateAnswer, ResponseState, toggleNextQuestion, togglePrevQuestion } from '../responseSlice';
 
 describe('responseSlice', () => {
     const initialState: ResponseState = {

@@ -2,10 +2,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import FormRenderer from './FormRenderer';
+import FormRenderer from '../FormRenderer';
 import responseReducer from '@/store/slices/responseSlice';
 import formReducer from '@/store/slices/formSlice';
-import { Options } from '@/components/form/FormOptions';
+import { Options } from '@/components/builder/FormOptions';
 import { Question } from '@/schemas/form.schema';
 import { submitFormResponse } from '@/actions/response.actions';
 

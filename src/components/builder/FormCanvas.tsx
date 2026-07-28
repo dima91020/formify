@@ -3,7 +3,7 @@
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {Question} from "@/schemas/form.schema";
 import {updateQuestion} from "@/store/slices/formSlice";
-import FormOptions, {Options} from "@/components/form/FormOptions";
+import FormOptions, {Options} from "@/components/builder/FormOptions";
 import {DndContext, DragEndEvent} from "@dnd-kit/core";
 import {arrayMove, SortableContext, verticalListSortingStrategy} from "@dnd-kit/sortable";
 
