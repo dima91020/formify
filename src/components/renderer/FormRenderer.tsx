@@ -252,6 +252,7 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
                     className="bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     onClick={() => dispatch(togglePrevQuestion())}
                     disabled={!history.length}
+                    aria-label="Go back"
                 >
                     <IoIosArrowBack />
                 </button>
@@ -289,6 +290,7 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
                             dispatch(toggleNextQuestion(currentQuestionId));
                         }}
                         disabled={!nextId}
+                        aria-label="Go forward"
                     >
                         <IoIosArrowBack className="rotate-180" />
                     </button>

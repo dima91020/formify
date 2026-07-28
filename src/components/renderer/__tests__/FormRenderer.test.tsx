@@ -8,6 +8,7 @@ import formReducer from '@/store/slices/formSlice';
 import { Options } from '@/components/builder/FormOptions';
 import { Question } from '@/schemas/form.schema';
 import { submitFormResponse } from '@/actions/response.actions';
+import userEvent from '@testing-library/user-event';
 
 vi.mock('@/actions/response.actions', () => ({
     submitFormResponse: vi.fn().mockResolvedValue({ success: true }),
@@ -70,55 +71,57 @@ describe('FormRenderer Component', () => {
         
         expect(screen.getByPlaceholderText('Type your answer')).toBeInTheDocument();
         
-        const buttons = screen.getAllByRole('button');
-        const prevButton = buttons[0]; 
+        const prevButton = screen.getByRole('button', { name: 'Go back' }); 
         expect(prevButton).toBeDisabled();
     });
 
     it('повинен показувати помилку валідації, якщо обов\'язкове поле порожнє', async () => {
+        const user = userEvent.setup();
+
         renderWithProvider(<FormRenderer questions={mockQuestions} formId="form-123" />);
 
-        const buttons = screen.getAllByRole('button');
-        const nextButton = buttons[buttons.length - 1];
+        const nextButton = screen.getByRole('button', { name: 'Go forward' });
         
-        fireEvent.click(nextButton);
+        await user.click(nextButton);
 
         expect(await screen.findByText('This field is required')).toBeInTheDocument();
     });
 
     it('повинен переходити на наступне питання після заповнення обов\'язкового поля', async () => {
+        const user = userEvent.setup();
+
         renderWithProvider(<FormRenderer questions={mockQuestions} formId="form-123" />);
 
         const input = screen.getByPlaceholderText('Type your answer');
-        fireEvent.change(input, { target: { value: 'Олександр' } });
+        await user.type(input, 'Олександр');
 
-        const buttons = screen.getAllByRole('button');
-        const nextButton = buttons[buttons.length - 1];
-        fireEvent.click(nextButton);
+        const nextButton = screen.getByRole('button', { name: 'Go forward' });
+        await user.click(nextButton);
 
         expect(await screen.findByText(/Оберіть вашу роль/i)).toBeInTheDocument();
         
-        const updatedButtons = screen.getAllByRole('button');
-        const prevButton = updatedButtons[0];
+        const prevButton = screen.getByRole('button', { name: 'Go back' });
         expect(prevButton).not.toBeDisabled();
     });
 
     it('повинен відправляти дані на сервер та показувати екран успіху', async () => {
+        const user = userEvent.setup();
+
         renderWithProvider(<FormRenderer questions={mockQuestions} formId="form-123" />);
 
         const input = screen.getByPlaceholderText('Type your answer');
-        fireEvent.change(input, { target: { value: 'Олександр' } });
+        await user.type(input, 'Олександр');
         
-        const firstNextButton = screen.getAllByRole('button')[1];
-        fireEvent.click(firstNextButton);
+        const firstNextButton = screen.getByRole('button', { name: 'Go forward' });
+        await user.click(firstNextButton);
 
         expect(await screen.findByText(/Оберіть вашу роль/i)).toBeInTheDocument();
 
         const radioOption = screen.getByLabelText('Developer');
-        fireEvent.click(radioOption);
+        await user.click(radioOption);
 
         const submitButton = screen.getByText('Submit');
-        fireEvent.click(submitButton);
+        await user.click(submitButton);
 
         expect(submitFormResponse).toHaveBeenCalledTimes(1);
         expect(submitFormResponse).toHaveBeenCalledWith('form-123', {
@@ -127,5 +130,28 @@ describe('FormRenderer Component', () => {
         });
 
         expect(await screen.findByText('Thank you!')).toBeInTheDocument();
+    });
+
+    it('повинен повертатися на перше питання при натисканні кнопки Назад', async () => {
+        const user = userEvent.setup();
+
+        renderWithProvider(<FormRenderer questions={mockQuestions} formId="form-123" />);
+        
+        const input = screen.getByPlaceholderText('Type your answer');
+        await user.type(input, 'Олександр');
+        
+        const firstStepNextButton = screen.getByRole('button', { name: 'Go forward' });
+        await user.click(firstStepNextButton);
+
+        expect(await screen.findByText(/Оберіть вашу роль/i)).toBeInTheDocument();
+
+        const secondStepPrevButton = screen.getByRole('button', { name: 'Go back' });
+        await user.click(secondStepPrevButton);
+
+        const questionTitle = await screen.findByText(/Як вас звати\?/i);
+        expect(questionTitle).toBeInTheDocument();
+        
+        const finalPrevButton = screen.getByRole('button', { name: 'Go back' });
+        expect(finalPrevButton).toBeDisabled();
     });
 });
