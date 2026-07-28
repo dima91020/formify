@@ -6,7 +6,6 @@ const globalForPrisma = globalThis as unknown as {
     prisma: PrismaClient | undefined;
 };
 
-// Створюємо клієнт тільки якщо його ще немає в глобальній пам'яті
 if (!globalForPrisma.prisma) {
     const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
     const adapter = new PrismaPg(pool);
@@ -14,7 +13,6 @@ if (!globalForPrisma.prisma) {
     globalForPrisma.prisma = new PrismaClient({ adapter });
 }
 
-// Одразу оголошуємо const, ESLint буде задоволений
 const prisma = globalForPrisma.prisma;
 
 export { prisma };

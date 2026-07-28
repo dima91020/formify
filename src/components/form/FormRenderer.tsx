@@ -154,6 +154,9 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
     }
 
     const nextId = getNextQuestion();
+    const currentStep = currentQuestionId ? history.length + 1 : 0;
+    const totalQuestions = questions.length;
+    const progressPercentage = totalQuestions > 0 ? Math.min(100, Math.max(0, Math.round((currentStep / totalQuestions) * 100))) : 0;
 
     if (isSuccess) {
         return (
@@ -166,6 +169,21 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
 
     return (
         <div className="flex flex-col gap-8 mt-8">
+            {totalQuestions > 0 && (
+                <div className="w-full flex flex-col gap-2">
+                    <div className="flex justify-between items-center text-sm font-medium text-gray-500">
+                        <span>Question {currentStep} of {totalQuestions}</span>
+                        <span className="font-semibold text-gray-900">{progressPercentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden border border-gray-200/50">
+                        <div
+                            className="bg-black h-2.5 rounded-full transition-all duration-300 ease-in-out"
+                            style={{ width: `${progressPercentage}%` }}
+                        />
+                    </div>
+                </div>
+            )}
+
             {questions
                 .filter((q) => q.id === currentQuestionId)
                 .map((question) => (
