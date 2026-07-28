@@ -1,104 +1,135 @@
-# 📝 Formify
+# Formify
 
-**Formify** — це сучасний веб-додаток для створення, налаштування та проходження інтерактивних форм і опитувальників. Проєкт побудований на стеку Next.js 16 (App Router), React 19, Redux Toolkit та Prisma ORM.
+A modern SaaS platform for creating dynamic forms and surveys. The key feature of this project is the visual logic builder (Logic Map), which allows users to configure complex branching scenarios based on user responses.
 
----
+## Core Features
 
-## ✨ Основні можливості
+* **Visual Logic Editor:** Build conditional routing between questions using an interactive node-based graph (powered by `@xyflow/react` & `@dagrejs/dagre`).
+* **Drag & Drop Question Builder:** Reorder and organize form questions effortlessly with `@dnd-kit`.
+* **State Management:** Scalable form data handling powered by Redux Toolkit.
+* **Authentication:** Secure OAuth login (Google, GitHub) with Auth.js (NextAuth v5).
+* **Automated Testing:** Component & unit tests coverage using Vitest and React Testing Library.
+* **Responsive UI:** Fully optimized for seamless use across all devices.
 
-- 🛠 **Інтерактивний Конструктор Форм (Form Builder):**
-  - Додавання та налаштування запитань різних типів (текстові відповіді, вибір одного або кількох варіантів).
-  - Сортування запитань методом **Drag & Drop** (за допомогою `@dnd-kit`).
-  - Налаштування обов'язкових полів, заголовків та варіантів відповідей.
-  
-- 🔀 **Візуальна карта логіки (Logic Map):**
-  - Інтерактивна діаграма розгалужень та переходів між питаннями (за допомогою `@xyflow/react` та `@dagrejs/dagre`).
+## Tech Stack
 
-- 🎯 **Проходження форм (Form Renderer):**
-  - Динамічне відображення форми для користувача.
-  - Автозбереження прогресу в `localStorage`.
-  - Валідація відповідей та надсилання даних через **Server Actions**.
-
-- 📊 **Дашборд користувача:**
-  - Управління чернетками та опублікованими формами.
-  - Швидке копіювання посилань та зміна статусів публікації.
-
----
-
-## 🛠 Технологічний стек
-
-- **Фреймворк:** [Next.js 16 (App Router)](https://nextjs.org/) & React 19
-- **Стейт-менеджмент:** [Redux Toolkit](https://redux-toolkit.js.org/)
-- **База даних & ORM:** PostgreSQL / Neon DB та [Prisma ORM 7](https://www.prisma.io/)
-- **Аутентифікація:** [NextAuth.js v5 (Auth.js)](https://authjs.dev/)
-- **Стилізація:** Tailwind CSS v4 & React Icons
-- **Інтерактивність & Графи:** `@dnd-kit` (Drag-and-Drop), `@xyflow/react` (React Flow), `@dagrejs/dagre`
-- **Валідація:** Zod
-- **Тестування:** Vitest & React Testing Library (Happy DOM)
+* **Framework:** Next.js 16 (App Router)
+* **UI Library:** React 19
+* **State Management:** Redux Toolkit
+* **Graph Visualization:** `@xyflow/react`, `@dagrejs/dagre`
+* **Drag & Drop:** `@dnd-kit/core`, `@dnd-kit/sortable`
+* **Styling:** Tailwind CSS v4, React Icons
+* **Database:** PostgreSQL (Neon)
+* **ORM:** Prisma
+* **Validation:** Zod
+* **Authentication:** Auth.js (NextAuth v5)
+* **Testing:** Vitest, React Testing Library, Happy DOM
+* **Deployment:** Vercel
 
 ---
 
-## 📁 Структура проєкту
+## Project Structure
 
 ```text
 src/
-├── actions/             # Server Actions для форм та відповідей (form.actions.ts, response.actions.ts)
-├── app/                 # Маршрути Next.js App Router (Дашборд, Auth, Екран проходження /f/[id])
-├── auth.ts              # Конфігурація NextAuth v5
-├── components/          # UI-компоненти, розділені за фічами:
-│   ├── builder/         # Конструктор форм (FormBuilder, FormCanvas, QuestionSettings, LogicMap...)
-│   ├── dashboard/       # Елементи дашборду (FormCard, CreateDraftFormButton)
-│   └── renderer/        # Програвач/Рендерер форми (FormRenderer, __tests__/)
-├── hooks/               # Кастомні React хуки (useDebounce)
-├── lib/                 # Інтеграції (Prisma Client)
-├── schemas/             # Схеми валідації Zod (form.schema.ts, response.schema.ts)
+├── actions/             # Server Actions (form.actions.ts, response.actions.ts)
+├── app/                 # Next.js App Router (Dashboard, Auth, /f/[id] survey runner)
+├── auth.ts              # NextAuth v5 configuration
+├── components/          # UI Components grouped by feature:
+│   ├── builder/         # Form Builder & Logic Map (FormBuilder, FormCanvas, QuestionSettings, LogicMap...)
+│   ├── dashboard/       # Dashboard elements (FormCard, CreateDraftFormButton)
+│   └── renderer/        # Form Renderer / Survey Runner (FormRenderer, __tests__/)
+├── hooks/               # Custom React hooks (useDebounce)
+├── lib/                 # Integrations (Prisma client)
+├── schemas/             # Zod validation schemas (form.schema.ts, response.schema.ts)
 ├── store/               # Redux Toolkit (slices, store, __tests__/)
-└── utils/               # Допоміжні утиліти (validators, localStorageMiddleware)
+└── utils/               # Helper utilities (validators, localStorageMiddleware)
 ```
 
 ---
 
-## 🚀 Запуск проєкту локально
+## Local Development
 
-### 1. Клонування та встановлення залежностей
+1. Clone the repository:
+```bash
+git clone https://github.com/dima91020/formify.git
+cd formify
+```
+
+2. Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-### 2. Налаштування середовища (`.env`)
-
-Створіть файл `.env` у корені проєкту та додайте необхідні змінні:
+3. Set up environment variables. Create a `.env` file in the root directory and add the following keys:
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/formify"
-AUTH_SECRET="your-secret-key"
+# Database
+DATABASE_URL="postgresql://user:password@host:port/dbname?sslmode=require"
+
+# Authentication (generate secret via: openssl rand -base64 32)
+AUTH_SECRET="your-generated-secret"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Providers
+AUTH_GOOGLE_ID="your-google-client-id"
+AUTH_GOOGLE_SECRET="your-google-client-secret"
+AUTH_GITHUB_ID="your-github-client-id"
+AUTH_GITHUB_SECRET="your-github-client-secret"
 ```
 
-### 3. Міграції бази даних
+4. Run database migrations / push schema:
 
 ```bash
 npx prisma db push
 ```
 
-### 4. Запуск сервера розробки
+5. Start the development server:
 
 ```bash
 pnpm dev
 ```
 
-Відкрийте [http://localhost:3000](http://localhost:3000) у вашому браузері.
+Open `http://localhost:3000` in your browser to see the result.
 
 ---
 
-## 🧪 Тестування
+## Testing
 
-Для запуску юніт-тестів та компонентних тестів через **Vitest**:
+Run unit & component tests with **Vitest**:
 
 ```bash
-# Одноразовий запуск тестів
+# Run tests once
 pnpm test
 
-# Запуск у режимі спостереження (watch mode)
+# Run tests in watch mode
 npx vitest
 ```
+
+---
+
+## Deployment on Vercel
+
+To ensure the project works correctly in a production environment:
+
+1. Import the repository into Vercel.
+2. Navigate to **Settings** -> **Environment Variables**.
+3. Add all variables from your local `.env` file (ensure values are entered without quotes).
+4. Update `NEXTAUTH_URL` to match your actual Vercel domain (e.g., `https://formify-maker.vercel.app`).
+5. Configure the build script in `package.json`:
+
+```json
+"scripts": {
+  "postinstall": "prisma generate",
+  "build": "next build"
+}
+```
+
+6. Trigger a redeployment without using cache if schema changes occur.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
