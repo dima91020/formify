@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📝 Formify
 
-## Getting Started
+**Formify** — це сучасний веб-додаток для створення, налаштування та проходження інтерактивних форм і опитувальників. Проєкт побудований на стеку Next.js 16 (App Router), React 19, Redux Toolkit та Prisma ORM.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Основні можливості
+
+- 🛠 **Інтерактивний Конструктор Форм (Form Builder):**
+  - Додавання та налаштування запитань різних типів (текстові відповіді, вибір одного або кількох варіантів).
+  - Сортування запитань методом **Drag & Drop** (за допомогою `@dnd-kit`).
+  - Налаштування обов'язкових полів, заголовків та варіантів відповідей.
+  
+- 🔀 **Візуальна карта логіки (Logic Map):**
+  - Інтерактивна діаграма розгалужень та переходів між питаннями (за допомогою `@xyflow/react` та `@dagrejs/dagre`).
+
+- 🎯 **Проходження форм (Form Renderer):**
+  - Динамічне відображення форми для користувача.
+  - Автозбереження прогресу в `localStorage`.
+  - Валідація відповідей та надсилання даних через **Server Actions**.
+
+- 📊 **Дашборд користувача:**
+  - Управління чернетками та опублікованими формами.
+  - Швидке копіювання посилань та зміна статусів публікації.
+
+---
+
+## 🛠 Технологічний стек
+
+- **Фреймворк:** [Next.js 16 (App Router)](https://nextjs.org/) & React 19
+- **Стейт-менеджмент:** [Redux Toolkit](https://redux-toolkit.js.org/)
+- **База даних & ORM:** PostgreSQL / Neon DB та [Prisma ORM 7](https://www.prisma.io/)
+- **Аутентифікація:** [NextAuth.js v5 (Auth.js)](https://authjs.dev/)
+- **Стилізація:** Tailwind CSS v4 & React Icons
+- **Інтерактивність & Графи:** `@dnd-kit` (Drag-and-Drop), `@xyflow/react` (React Flow), `@dagrejs/dagre`
+- **Валідація:** Zod
+- **Тестування:** Vitest & React Testing Library (Happy DOM)
+
+---
+
+## 📁 Структура проєкту
+
+```text
+src/
+├── actions/             # Server Actions для форм та відповідей (form.actions.ts, response.actions.ts)
+├── app/                 # Маршрути Next.js App Router (Дашборд, Auth, Екран проходження /f/[id])
+├── auth.ts              # Конфігурація NextAuth v5
+├── components/          # UI-компоненти, розділені за фічами:
+│   ├── builder/         # Конструктор форм (FormBuilder, FormCanvas, QuestionSettings, LogicMap...)
+│   ├── dashboard/       # Елементи дашборду (FormCard, CreateDraftFormButton)
+│   └── renderer/        # Програвач/Рендерер форми (FormRenderer, __tests__/)
+├── hooks/               # Кастомні React хуки (useDebounce)
+├── lib/                 # Інтеграції (Prisma Client)
+├── schemas/             # Схеми валідації Zod (form.schema.ts, response.schema.ts)
+├── store/               # Redux Toolkit (slices, store, __tests__/)
+└── utils/               # Допоміжні утиліти (validators, localStorageMiddleware)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Запуск проєкту локально
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Клонування та встановлення залежностей
 
-## Learn More
+```bash
+pnpm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Налаштування середовища (`.env`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Створіть файл `.env` у корені проєкту та додайте необхідні змінні:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/formify"
+AUTH_SECRET="your-secret-key"
+```
 
-## Deploy on Vercel
+### 3. Міграції бази даних
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npx prisma db push
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 4. Запуск сервера розробки
+
+```bash
+pnpm dev
+```
+
+Відкрийте [http://localhost:3000](http://localhost:3000) у вашому браузері.
+
+---
+
+## 🧪 Тестування
+
+Для запуску юніт-тестів та компонентних тестів через **Vitest**:
+
+```bash
+# Одноразовий запуск тестів
+pnpm test
+
+# Запуск у режимі спостереження (watch mode)
+npx vitest
+```
