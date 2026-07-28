@@ -2,8 +2,8 @@ import Link from "next/link";
 import {auth} from "@/auth";
 import {redirect} from "next/navigation";
 import {prisma} from "@/lib/prisma";
-import FormCard from "@/components/form/FormCard";
-import CreateDraftFormButton from "@/components/form/CreateDraftFormButton";
+import FormCard from "@/components/dashboard/FormCard";
+import CreateDraftFormButton from "@/components/dashboard/CreateDraftFormButton";
 
 export default async function DashboardPage() {
     const session = await auth();

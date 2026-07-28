@@ -6,7 +6,7 @@ import { hasDuplicateOptions } from "@/utils/validators";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { ChangeEvent } from "react";
 import { Question } from "@/schemas/form.schema";
-import { Options } from "@/components/form/FormOptions";
+import { Options } from "@/components/builder/FormOptions";
 
 export default function QuestionSettings() {
     const questions = useAppSelector(state => state.form.questions);

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useAppSelector } from "@/store/hooks";
 import { Background, Controls, ReactFlow } from "@xyflow/react";
-import QuestionNode from "@/components/form/QuestionNode";
+import QuestionNode from "@/components/builder/QuestionNode";
 import dagre from "@dagrejs/dagre";
 
 const nodeTypes = {

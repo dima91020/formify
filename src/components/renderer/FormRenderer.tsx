@@ -13,7 +13,7 @@ import {
     updateAnswer,
 } from "@/store/slices/responseSlice";
 import {IoIosArrowBack} from "react-icons/io";
-import {Options} from "@/components/form/FormOptions";
+import {Options} from "@/components/builder/FormOptions";
 import {Answers} from "@/schemas/response.schema";
 
 export default function FormRenderer({ questions, formId }: { questions: Question[], formId: string }) {

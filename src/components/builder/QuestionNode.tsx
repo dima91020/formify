@@ -1,5 +1,5 @@
 import {Handle, Position, NodeProps, Node} from "@xyflow/react"
-import {Options} from "@/components/form/FormOptions";
+import {Options} from "@/components/builder/FormOptions";
 
 export type QuestionNodeData = {
     title: string;
