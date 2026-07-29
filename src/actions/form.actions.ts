@@ -56,23 +56,20 @@ export async function updateForm(newData: CreateFormInput, id: string) {
             return { success: false, error: "Unauthorized", message: "You must be logged in to update a form." };
         }
 
-        const existingForm = await prisma.form.findUnique({
-            where: {id}
-        })
-
-        if (!existingForm || existingForm.userId !== session.user.id) {
-            return { success: false, error: "Forbidden", message: "You do not have permission to edit this form." };
-        }
-
-        const form = await prisma.form.update({
+        const result = await prisma.form.updateMany({
             where: {
                 id,
+                userId: session.user.id,
             },
-            data: newData,
+            data: validated.data,
         })
 
+        if (result.count === 0) {
+            return { success: false, error: "Not Found", message: "Form not found or access denied." };
+        }
+
         revalidatePath("/dashboard")
-        return {success: true, form};
+        return {success: true, form: result};
     } catch (error) {
         return {
             success: false,
@@ -90,9 +87,6 @@ export async function deleteForm(id: string) {
             return { success: false, error: "Unauthorized", message: "You must be logged in." };
         }
 
-        // deleteMany видаляє всі записи, що відповідають умовам.
-        // Якщо форма не існує або належить іншому користувачу,
-        // база даних просто видалить 0 записів і не викине помилку.
         const result = await prisma.form.deleteMany({
             where: {
                 id: id,
@@ -100,7 +94,6 @@ export async function deleteForm(id: string) {
             },
         });
 
-        // Перевіряємо, чи реально щось було видалено
         if (result.count === 0) {
             return {
                 success: false,

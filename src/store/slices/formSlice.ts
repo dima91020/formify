@@ -59,8 +59,18 @@ export const formBuilderSlice = createSlice({
 
             state.questions = arrayMove(state.questions, activeQuestionsIndex, overQuestionsIndex);
 
-            if (state.questions[0] && state.questions[0].condition) {
-                state.questions[0].condition = undefined;
+            const movedQuestion = state.questions[overQuestionsIndex];
+
+            if (movedQuestion && movedQuestion.condition) {
+                if (overQuestionsIndex === 0) {
+                    movedQuestion.condition = undefined;
+                } else {
+                    const targetIndex = state.questions.findIndex((q) => q.id === movedQuestion.condition?.targetQuestionId);
+
+                    if (targetIndex >= overQuestionsIndex) {
+                        movedQuestion.condition.targetQuestionId = state.questions[overQuestionsIndex - 1].id;
+                    }
+                }
             }
         }
     },
