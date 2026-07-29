@@ -28,6 +28,7 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
     const debouncedFormState = useDebounce<FormBuilderState>(formState, 1000);
     const searchParams = useSearchParams();
     const currentTab = searchParams.get("tab") || 'questions';
+    const isInitialized = useRef(false);
 
     const lastSavedData = useRef(JSON.stringify({
         title: initialData.title,
@@ -46,11 +47,13 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
                 title: initialData.title,
                 schema: initialData.schema as CreateFormInput["schema"],
             }));
+
+            isInitialized.current = true;
         }
     }, [dispatch, initialData.id]);
 
     useEffect(() => {
-        if (hasErrors) return;
+        if (hasErrors || !isInitialized.current) return;
 
         const dataToSave = {
             title: debouncedFormState.title,
@@ -75,11 +78,9 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
                     lastSavedData.current = currentDataString;
                 } else {
                     setSyncStatus(SYNC_STATUS.Error);
-                    console.error("Server auto-save error:", result.error);
                 }
             } catch (error) {
                 setSyncStatus(SYNC_STATUS.Error);
-                console.error("Network auto-save error:", error);
             }
         }
 

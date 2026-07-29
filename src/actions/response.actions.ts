@@ -6,6 +6,15 @@ import {prisma} from "@/lib/prisma";
 export type Answers = Record<string, string | string[]>;
 
 export async function submitFormResponse(formId: string, answers: Answers) {
+    const form = await prisma.form.findUnique({
+        where: {
+            id: formId,
+            published: true,
+        }
+    })
+
+    if (!form) return { success: false, error: "Form not found or not published" };
+
     const validatedAnswers = saveAnswersSchema.safeParse(answers);
 
     if (!validatedAnswers.success) return {
