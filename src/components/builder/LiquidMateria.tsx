@@ -238,8 +238,9 @@ export default function LiquidMateria() {
         height: "100vh",
         pointerEvents: "none",
         backgroundColor: "transparent",
-        opacity: 0.7,
-        filter: "blur(0.5px)",
+        opacity: 0.85,
+        zIndex: 1,
+        filter: "blur(0.3)",
       }}
     />
   );
