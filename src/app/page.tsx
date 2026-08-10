@@ -9,6 +9,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import LiquidMateria from "@/components/builder/LiquidMateria";
+import VideoShowcase from "@/components/landing/VideoShowcase";
 
 const FEATURES = [
   {
@@ -89,6 +90,70 @@ const FEATURES = [
         <span className="text-zinc-900 font-medium">CSV • JSON • XLSX</span>
       </>
     ),
+  },
+];
+
+const PRICING_TIERS = [
+  {
+    id: "community",
+    typeTag: "SELF-HOSTED",
+    title: "Community",
+    description: "Perfect for solo developers and personal projects.",
+    price: "$0",
+    oldPrice: null,
+    period: "/ forever",
+    features: [
+      "Unlimited forms & questions",
+      "Up to 1,000 responses / mo",
+      "Basic analytics & CSV export",
+      "Community GitHub support"
+    ],
+    buttonText: "Deploy Now",
+    buttonHref: "/login",
+    buttonVariant: "outline" as const,
+    isPopular: false,
+    bgClass: "bg-white",
+  },
+  {
+    id: "pro-cloud",
+    typeTag: "CLOUD HOSTED",
+    title: "Pro Cloud",
+    description: "Zero-setup cloud instance for growing teams and startups.",
+    oldPrice: "$49",
+    price: "$0",
+    period: "/ forever",
+    features: [
+      "Everything in Community",
+      "Unlimited responses & storage",
+      "Conditional logic & branching",
+      "Real-time Webhooks & API",
+      "High-five from author"
+    ],
+    buttonText: "Start Free Cloud",
+    buttonHref: "/login",
+    buttonVariant: "default" as const,
+    isPopular: true,
+    bgClass: "bg-zinc-50/70"
+  },
+  {
+    id: "sponsor",
+    typeTag: "OPEN SOURCE",
+    title: "Sponsor & Scale",
+    description: "For organization teams wanting custom domains & RBAC.",
+    oldPrice: "$999",
+    price: "$0",
+    period: "/ forever",
+    features: [
+      "Everything in Pro Cloud",
+      "Custom domain integration",
+      "Role-Based Access (RBAC)",
+      "\"Why pay when it's free?\""
+    ],
+    buttonText: "Star on GitHub ⭐",
+    buttonHref: "https://github.com/dima91020/formify",
+    buttonVariant: "outline" as const,
+    isPopular: false,
+    bgClass: "bg-white"
   },
 ];
 
@@ -220,36 +285,96 @@ export default function HomePage() {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {FEATURES.map((feature) => (
-                  <Card 
-                    key={feature.id} 
-                    className={`p-6 sm:p-8 rounded-2xl bg-white border border-zinc-200/90 shadow-sm hover:border-zinc-400 transition-colors text-left flex flex-col justify-between gap-6 ${feature.colSpan || ''} ${feature.isRow ? 'md:flex-row md:items-center' : ''}`}
-                  >
-                    <CardHeader className="p-0 space-y-3 w-full flex-1 max-w-xl">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-zinc-400 font-medium">{feature.id}</span>
-                        <span className="px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-[10px] font-mono font-medium text-zinc-600">
-                          {feature.tag}
-                        </span>
+                <Card
+                  key={feature.id}
+                  className={`p-6 sm:p-8 rounded-2xl bg-white border border-zinc-200/90 shadow-sm hover:border-zinc-400 transition-colors text-left flex flex-col justify-between gap-6 ${feature.colSpan || ''} ${feature.isRow ? 'md:flex-row md:items-center' : ''}`}
+                >
+                  <CardHeader className="p-0 space-y-3 w-full flex-1 max-w-xl">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-zinc-400 font-medium">{feature.id}</span>
+                      <span className="px-2.5 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-[10px] font-mono font-medium text-zinc-600">
+                        {feature.tag}
+                      </span>
+                    </div>
+                    <CardTitle className="font-semibold text-zinc-900 text-lg tracking-normal">{feature.title}</CardTitle>
+                    <CardDescription className="text-sm text-zinc-500 leading-relaxed font-normal">
+                      {feature.description}
+                    </CardDescription>
+                  </CardHeader>
+                  {feature.hint && (
+                    <CardContent className="p-0 w-full md:w-auto shrink-0">
+                      {feature.hint}
+                    </CardContent>
+                  )}
+                  {feature.hintContent && (
+                    <CardContent className="p-0 w-full mt-4">
+                      <div className="p-2.5 rounded-lg bg-zinc-50 border border-zinc-200/80 font-mono text-[11px] text-zinc-600 flex items-center justify-between w-full">
+                        {feature.hintContent}
                       </div>
-                      <CardTitle className="font-semibold text-zinc-900 text-lg tracking-normal">{feature.title}</CardTitle>
-                      <CardDescription className="text-sm text-zinc-500 leading-relaxed font-normal">
-                        {feature.description}
-                      </CardDescription>
-                    </CardHeader>
-                    {feature.hint && (
-                      <CardContent className="p-0 w-full md:w-auto shrink-0">
-                        {feature.hint}
-                      </CardContent>
-                    )}
-                    {feature.hintContent && (
-                      <CardContent className="p-0 w-full mt-4">
-                        <div className="p-2.5 rounded-lg bg-zinc-50 border border-zinc-200/80 font-mono text-[11px] text-zinc-600 flex items-center justify-between w-full">
-                          {feature.hintContent}
-                        </div>
-                      </CardContent>
-                    )}
-                  </Card>  
-                ))}
+                    </CardContent>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <VideoShowcase />
+
+        <section id="pricing" className="border-t border-zinc-200/80 bg-zinc-50/50 py-24">
+          <div className="container mx-auto px-4 md:px-8 space-y-16">
+            <div className="space-y-4 text-left max-w-2xl">
+              <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Pricing</span>
+              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900">
+                Simple, transparent pricing. 100% <br /> free.
+              </h2>
+              <p className="text-lg text-zinc-600 font-normal leading-relaxed">Formify is open-source and free forever. No credit card required.</p>
+            </div>
+
+            <div className="rounded-3xl border border-zinc-200/90 bg-white shadow-sm overflow-hidden grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-zinc-200/90 text-left items-stretch">
+              {PRICING_TIERS.map((pricing_tier) => (
+                <Card key={pricing_tier.id} className={`rounded-none border-0 shadow-none p-8 sm:p-10 flex flex-col justify-between space-y-8 relative ${pricing_tier.bgClass}`}>
+                  <CardHeader className="p-0 space-y-3">
+                    <div className={`flex items-center ${pricing_tier.isPopular ? 'justify-between' : ''}`}>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-md ${pricing_tier.isPopular ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'} text-[10px] font-mono font-medium border border-zinc-200`}>{pricing_tier.typeTag}</span>
+                      {pricing_tier.isPopular && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-zinc-200 border border-zinc-300 text-[10px] font-mono font-medium text-zinc-800">
+                          MOST POPULAR
+                        </span>
+                      )}
+                    </div>
+                    <CardTitle className="text-xl text-zinc-900 font-semibold tracking-normal mt-3">{pricing_tier.title}</CardTitle>
+                    <CardDescription className="text-sm text-zinc-500 leading-relaxed font-normal mt-1">{pricing_tier.description}</CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="p-0 flex flex-col justify-between flex-1 space-y-8 mt-6">
+                    <div className="space-y-6">
+                      <div className="flex items-baseline gap-2 pt-2 border-t border-zinc-100">
+                        {pricing_tier.oldPrice && (
+                          <span className="text-sm font-mono text-zinc-400 line-through">
+                            {pricing_tier.oldPrice}
+                          </span>
+                        )}
+                        <span className="text-5xl font-extrabold tracking-tight text-zinc-900">{pricing_tier.price}</span>
+                        <span className="text-sm text-zinc-500 font-medium">{pricing_tier.period}</span>
+                      </div>
+
+                      <ul className="space-y-3 pt-2 text-sm text-zinc-600 font-medium">
+                        {pricing_tier.features.map((feature, index) => (
+                          <li key={index} className="flex items-center gap-2.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 shrink-0" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <Button asChild size="lg" variant={pricing_tier.buttonVariant} className="w-full rounded-xl py-6 text-sm font-medium transition-all">
+                      <Link href={pricing_tier.buttonHref}>{pricing_tier.buttonText}</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>
