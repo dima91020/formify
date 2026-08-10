@@ -157,6 +157,30 @@ const PRICING_TIERS = [
   },
 ];
 
+const FAQS = [
+  {
+    q: "Is Formify really 100% free and open-source?",
+    a: "Yes. Formify is licensed under MIT. You can run it on your own hardware, fork the code, customize the engine, and host unlimited surveys with zero fees or artificial paywalls."
+  },
+  {
+    q: "How does Formify compare to Typeform or Google Forms?",
+    a: "Google Forms lacks modern developer features like conditional logic, webhooks, and modern styling. Typeform charges hundreds of dollars per month for basic response limits. Formify combines high-end UX, developer-first APIs, and complete data ownership for free."
+  },
+  {
+    q: "Can I self-host Formify with Docker or on my own VPS?",
+    a: "Absolutely. The repository includes Docker Compose configurations for one-click deployment alongside PostgreSQL and Redis."
+  },
+  {
+    q: "How do real-time Webhooks & REST APIs work?",
+    a: "Every form submission can trigger signed HTTP webhooks to your servers, Discord, Slack, or Zapier, or be fetched directly via our authenticated REST API endpoints."
+  },
+  {
+    q: "Where is my survey data stored and is it secure?",
+    a: "In the Cloud version, your data is securely stored in isolated PostgreSQL instances with encrypted connections. In Self-Hosted mode, your data never leaves your private infrastructure."
+  }
+];
+
+
 export default function HomePage() {
   const linkStyles = "text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition-colors";
 
@@ -172,6 +196,7 @@ export default function HomePage() {
           <nav className="hidden md:flex gap-6">
             <Link href="#features" className={linkStyles}>Features</Link>
             <Link href="#pricing" className={linkStyles}>Pricing</Link>
+            <Link href="#faq" className={linkStyles}>FAQ</Link>
             <Link href="#docs" className={linkStyles}>Docs</Link>
           </nav>
 
@@ -274,7 +299,7 @@ export default function HomePage() {
         <section id="features" className="border-t border-zinc-200/80 bg-zinc-50/50 py-24">
           <div className="container mx-auto px-4 md:px-8 space-y-16">
             <div className="space-y-4 max-w-2xl text-left">
-              <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Feuteres</span>
+              <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Features</span>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900">
                 Everything you need to build powerful forms.
               </h2>
@@ -378,6 +403,152 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <section id="faq" className="border-t border-zinc-200/80 bg-zinc-50/80 relative z-20 py-24">
+          <div className="container mx-auto max-w-4xl px-4 md:px-8 space-y-16">
+            <div className="space-y-4 text-left">
+              <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">FAQ</span>
+              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-zinc-900">Frequently asked questions</h2>
+              <p className="text-lg text-zinc-600 font-normal leading-relaxed">Everything you need to know about Formify, licensing, and architecture.</p>
+            </div>
+
+            <div className="divide-y divide-zinc-200 border-y border-zinc-200 text-left">
+              {FAQS.map((faq, index) => (
+                <details key={index} className="py-6 group cursor-pointer">
+                  <summary className="flex justify-between items-center font-semibold text-lg text-zinc-900 list-none group-hover:text-zinc-600 transition-colors">
+                    <span>{faq.q}</span>
+                    <span className="ml-4 text-xl font-mono text-zinc-400 group-open:rotate-45 transition-transform duration-200 select-none">+</span>
+                  </summary>
+                  <p className="mt-4 text-zinc-600 leading-relaxed text-base font-normal">{faq.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-zinc-200/80 bg-zinc-50/50 py-24 relative z-20">
+          <div className="container mx-auto px-4 md:px-8">
+            <div className="relative rounded-3xl bg-zinc-950 text-white p-10 sm:p-16 md:p-20 overflow-hidden shadow-2xl border border-zinc-800 text-center space-y-8 max-w-5xl mx-auto">
+              <div className="space-y-4 max-w-2xl mx-auto">
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-mono text-zinc-300 uppercase tracking-widest">OPEN-SOURCE & FREE FOREVER</span>
+                <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight mt-4">
+                  Build smarter forms.<br />
+                  Collect insights in seconds.
+                </h2>
+                <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">
+                  Join developers and creators building next-generation surveys with complete control over their data.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-2">
+                <Button asChild size="lg" className="rounded-xl px-8 py-6 text-base bg-white text-zinc-950 hover:bg-zinc-200 font-semibold shadow-md transition-all">
+                  <Link href="/login">Get Started Free</Link>
+                </Button>
+                <Button asChild size="lg" className="rounded-xl px-8 py-6 text-base border border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white font-medium transition-all shadow-none">
+                  <Link href="https://github.com/dima91020/formify" target="_blank">Star on GitHub ⭐</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer className="border-t border-zinc-200/80 bg-white py-16 text-left relative z-20">
+          <div className="container mx-auto px-4 md:px-8 space-y-12">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+              <div className="col-span-2 space-y-4">
+                <div className="flex gap-2 items-center">
+                  <BarChart3 className="h-6 w-6 text-primary" />
+                  <span className="text-xl font-bold tracking-tighter text-zinc-900">Formify</span>
+                </div>
+                <p className="text-sm text-zinc-500 max-w-sm leading-relaxed">
+                  The open-source, developer-first form engine for smart surveys, conditional flows, and real-time analytics.
+                </p>
+                <div className="pt-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-100 border border-zinc-200 text-xs font-mono text-zinc-600">
+                    MIT LICENSE • FREE FOREVER
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-xs font-mono uppercase tracking-wider text-zinc-900 font-bold">Product</h4>
+                <ul className="space-y-2 text-sm text-zinc-600">
+                  <li>
+                    <Link href="#features" className="hover:text-zinc-900 transition-colors">
+                      Features
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#pricing" className="hover:text-zinc-900 transition-colors">
+                      Pricing
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#faq" className="hover:text-zinc-900 transition-colors">
+                      FAQ
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/login" className="hover:text-zinc-900 transition-colors">
+                      Live Preview
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-xs font-mono uppercase tracking-wider text-zinc-900 font-bold">Developers</h4>
+                <ul className="space-y-2 text-sm text-zinc-600">
+                  <li>
+                    <Link href="https://github.com/dima91020/formify" target="_blank" className="hover:text-zinc-900 transition-colors">
+                      GitHub Repository
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#docs" className="hover:text-zinc-900 transition-colors">
+                      Documentation
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#features" className="hover:text-zinc-900 transition-colors">
+                      REST API & Webhooks
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="https://github.com/dima91020/formify/issues" target="_blank" className="hover:text-zinc-900 transition-colors">
+                      Issue Tracker
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-xs font-mono uppercase tracking-wider text-zinc-900 font-bold">Legal & Community</h4>
+                <ul className="space-y-2 text-sm text-zinc-600">
+                  <li>
+                    <Link href="/" className="hover:text-zinc-900 transition-colors">
+                      Privacy Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/" className="hover:text-zinc-900 transition-colors">
+                      Terms of Service
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="https://github.com/dima91020/formify" target="_blank" className="hover:text-zinc-900 transition-colors">
+                      Open-Source Community
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="pt-8 border-t border-zinc-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-zinc-500">
+              <p>© {new Date().getFullYear()} Formify. Open-source under MIT License.</p>
+            </div>
+          </div>
+        </footer>
       </main>
 
       <LiquidMateria />
