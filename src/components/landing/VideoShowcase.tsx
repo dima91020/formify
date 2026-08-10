@@ -32,18 +32,18 @@ export default function VideoShowcase() {
     }, []);
 
     return (
-        <section ref={containerRef} className="relative z-20 w-full bg-background flex justify-center overflow-hidden px-2 sm:px-6 md:px-12 py-20 md:py-36">
+        <section ref={containerRef} className="relative z-20 w-full bg-background flex justify-center overflow-hidden px-4 sm:px-6 md:px-12 py-16 sm:py-24 md:py-36">
             <div
                 ref={targetRef}
-                className="relative z-20 w-full max-w-[1536px] mx-auto rounded-3xl sm:rounded-[2.5rem] md:rounded-[3rem] bg-zinc-950 ring-1 ring-white/10 border border-zinc-800/90 shadow-[0_50px_140px_rgba(0,0,0,0.95)] overflow-hidden"
+                className="relative z-20 w-full max-w-[1536px] mx-auto rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] bg-zinc-950 ring-1 ring-white/10 border border-zinc-800/90 shadow-[0_50px_140px_rgba(0,0,0,0.95)] overflow-hidden"
                 style={{
                     ["--progress" as string]: "0",
-                    transform: `perspective(1200px) scale(calc(0.35 + var(--progress) * 0.75)) translateY(calc((1 - var(--progress)) * 100px))` ,
-                    opacity: `calc(0.35 + var(--progress) * 0.65)`,
+                    transform: `perspective(1200px) scale(calc(0.45 + var(--progress) * 0.55)) translateY(calc((1 - var(--progress)) * 80px))` ,
+                    opacity: `calc(0.45 + var(--progress) * 0.55)`,
                     willChange: "transform, opacity",
                 }}
             >
-                <div className="relative aspect-video w-full bg-zinc-950 overflow-hidden">
+                <div className="relative aspect-[4/3] sm:aspect-video w-full bg-zinc-950 overflow-hidden">
                     <video
                         autoPlay
                         muted
