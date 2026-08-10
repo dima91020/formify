@@ -239,7 +239,7 @@ export default function LiquidMateria() {
         pointerEvents: "none",
         backgroundColor: "transparent",
         opacity: 0.85,
-        zIndex: 1,
+        zIndex: 0,
         filter: "blur(0.3)",
       }}
     />

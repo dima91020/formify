@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import FormRenderer from "@/components/renderer/FormRenderer";
-import {CreateFormInput} from "@/schemas/form.schema";
-import {auth} from "@/auth";
+import { CreateFormInput } from "@/schemas/form.schema";
+import { auth } from "@/auth";
 
 export default async function PublicFormPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
