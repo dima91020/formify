@@ -39,5 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
 /src/generated/prisma
+
+# tasks & roadmap
+TASKS.md
