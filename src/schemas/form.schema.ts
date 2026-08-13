@@ -1,4 +1,4 @@
-import * as z from 'zod';
+import * as z from "zod";
 
 const questionSchema = z.object({
     id: z.string(),
@@ -26,7 +26,7 @@ const formContentSchema = z.object({
 });
 
 export const createFormSchema = z.object({
-   title: z.string().min(1, 'Title should be at least 1 characters')
+   title: z.string().min(1, "Title should be at least 1 characters")
        .max(100, "Title should be less than 100 characters"),
    schema: formContentSchema,
 });

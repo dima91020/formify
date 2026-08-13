@@ -12,7 +12,7 @@ export async function createForm(data: CreateFormInput) {
         return {
             success: false,
             error: validated.error.flatten().fieldErrors,
-            message: 'Validation failed.',
+            message: "Validation failed.",
         };
     }
 
