@@ -116,12 +116,12 @@ export default function QuestionSettings() {
                     onChange={(e) => handleChangeQuestionType(e)}
                 >
                     <option value={Options.TEXT}>Text Answer</option>
-                    <option value={Options.CHOICE}>Multiple Choice</option>
-                    <option value={Options.CHECKBOX}>Checkboxes</option>
-                    <option value={Options.RATING}>Rating 1-5</option>
-                    <option value={Options.NPS}>Net Promoter Score</option>
-                    <option value={Options.EMAIL}>Email</option>
-                    <option value={Options.DATE}>Date</option>
+                    <option value={Options.CHOICE}>Single Choice (Radio)</option>
+                    <option value={Options.CHECKBOX}>Multiple Choice (Checkboxe)</option>
+                    <option value={Options.RATING}>Rating (1-5 Stars)</option>
+                    <option value={Options.NPS}>NPS Scale (0-10)</option>
+                    <option value={Options.EMAIL}>Email Address</option>
+                    <option value={Options.DATE}>Date Picker</option>
                 </select>
             </div>
 
