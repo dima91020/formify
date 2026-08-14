@@ -1,29 +1,42 @@
-import {Question} from "@/schemas/form.schema";
-import {useSortable} from "@dnd-kit/sortable";
-import {CSS} from "@dnd-kit/utilities";
-import {TbGridDots} from "react-icons/tb";
-import {deleteQuestion, setActiveQuestion} from "@/store/slices/formSlice";
+import { Question } from "@/schemas/form.schema";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { deleteQuestion, setActiveQuestion } from "@/store/slices/formSlice";
 import clsx from "clsx";
-import {RxCross2} from "react-icons/rx";
-import {useAppDispatch, useAppSelector} from "@/store/hooks";
-import {MouseEvent} from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { MouseEvent } from "react";
+import { Calendar, CheckSquare, GripVertical, Hash, ListFilter, Mail, Star, Trash2, Type } from "lucide-react";
 
-export default function SidebarItem({ question }: {question: Question}) {
+const TYPE_ICONS: Record<string, typeof Type> = {
+    TEXT: Type,
+    CHOICE: ListFilter,
+    CHECKBOX: CheckSquare,
+    RATING: Star,
+    NPS: Hash,
+    EMAIL: Mail,
+    DATE: Calendar,
+};
+
+export default function SidebarItem({ question }: { question: Question }) {
     const questions = useAppSelector((state) => state.form.questions);
+    const activeQuestionId = useAppSelector(state => state.form.activeQuestionId);
+    const dispatch = useAppDispatch();
 
-    const { attributes, transform, transition, setNodeRef, listeners } = useSortable({ id: question.id });
+    const { attributes, transform, transition, setNodeRef, listeners, isDragging } = useSortable({ id: question.id });
     const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+        transition: isDragging ? 'none' : transition,
+        opacity: isDragging ? 0.6 : 1,
+        zIndex: isDragging ? 50 : 'auto',
     };
 
-    const dispatch = useAppDispatch();
-    const activeQuestionId = useAppSelector(state => state.form.activeQuestionId);
+    const isActive = question.id === activeQuestionId;
+    const Icon = TYPE_ICONS[question.type] || Type;
 
     const handleDeleteQuestion = (e: MouseEvent<HTMLButtonElement>, id: string) => {
         e.stopPropagation();
         dispatch(deleteQuestion(id));
-    }
+    };
 
     return (
         <div
@@ -31,24 +44,49 @@ export default function SidebarItem({ question }: {question: Question}) {
             style={style}
             onClick={() => dispatch(setActiveQuestion(question.id))}
             className={clsx(
-                "flex justify-between px-3 py-2 rounded-md cursor-pointer text-sm transition-colors",
-                question.id === activeQuestionId
-                    ? "bg-gray-100 font-medium text-gray-700"
-                    : "hover:bg-gray-50 text-gray-600"
+                "group relative flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer text-xs font-medium transition-all select-none",
+                isActive
+                    ? "bg-zinc-950 text-white shadow-xs font-semibold"
+                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
             )}
         >
-            <div className="flex flex-1 gap-2">
-                <button className="cursor-grab" {...attributes} {...listeners}>
-                    <TbGridDots />
+            <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
+                <button
+                    type="button"
+                    className={clsx(
+                        "cursor-grab active:cursor-grabbing p-0.5 rounded transition-opacity",
+                        isActive ? "text-zinc-400 hover:text-white" : "text-zinc-400 hover:text-zinc-600 opacity-40 group-hover:opacity-100"
+                    )}
+                    {...attributes}
+                    {...listeners}
+                >
+                    <GripVertical className="h-3.5 w-3.5" />
                 </button>
-                <div>{questions.indexOf(question) + 1}.</div>
-                {question.title}
+
+                <div className={clsx(
+                    "p-1 rounded-md",
+                    isActive ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-500"
+                )}>
+                    <Icon className="h-3.5 w-3.5" />
+                </div>
+
+                <span className="truncate">
+                    {questions.indexOf(question) + 1}. {question.title || "Untitled Question"}
+                </span>
             </div>
+
             <button
-                className="hover:text-red-500 cursor-pointer transition-colors"
+                type="button"
+                className={clsx(
+                    "p-1 rounded-lg transition-all opacity-0 group-hover:opacity-100 cursor-pointer",
+                    isActive
+                        ? "text-zinc-400 hover:text-red-400 hover:bg-white/10"
+                        : "text-zinc-400 hover:text-red-500 hover:bg-red-50"
+                )}
                 onClick={(e) => handleDeleteQuestion(e, question.id)}
+                title="Delete Question"
             >
-                <RxCross2 />
+                <Trash2 className="h-3.5 w-3.5" />
             </button>
         </div>
     );
