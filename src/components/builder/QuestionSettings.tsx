@@ -36,7 +36,7 @@ export default function QuestionSettings() {
             updates.options = [{ id: crypto.randomUUID(), value: "Option" }];
         }
 
-        if (activeQuestion.options && newType === Options.TEXT) {
+        if (activeQuestion.options && newType !== Options.CHECKBOX && newType !== Options.CHOICE) {
             updates.options = undefined;
         }
 
@@ -106,7 +106,7 @@ export default function QuestionSettings() {
                 </div>
             </div>
 
-            <hr className="border-t border-gray-400 my-1"/>
+            <hr className="border-t border-gray-400 my-1" />
 
             <div>
                 <label className="text-md font-medium text-gray-700">Question Type</label>
@@ -118,10 +118,14 @@ export default function QuestionSettings() {
                     <option value={Options.TEXT}>Text Answer</option>
                     <option value={Options.CHOICE}>Multiple Choice</option>
                     <option value={Options.CHECKBOX}>Checkboxes</option>
+                    <option value={Options.RATING}>Rating 1-5</option>
+                    <option value={Options.NPS}>Net Promoter Score</option>
+                    <option value={Options.EMAIL}>Email</option>
+                    <option value={Options.DATE}>Date</option>
                 </select>
             </div>
 
-            <hr className="border-t border-gray-400 my-1"/>
+            <hr className="border-t border-gray-400 my-1" />
 
             <div className="text-md font-medium text-gray-700">
                 <p className="mb-2">Logic & Branching</p>
