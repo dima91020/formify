@@ -11,8 +11,8 @@ import { Form } from "@prisma/client";
 import { CreateFormInput } from "@/schemas/form.schema";
 import { useDebounce } from "@/hooks/useDebounce";
 import BuilderHeader from "@/components/builder/BuilderHeader";
-import { useSearchParams } from "next/navigation";
-import { hasDuplicateOptions } from "@/utils/validators";
+import {useSearchParams} from "next/navigation";
+import {hasDuplicateOptions} from "@/utils/validators";
 import LogicMap from "@/components/builder/LogicMap";
 
 export enum SYNC_STATUS {
@@ -88,21 +88,23 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
     }, [debouncedFormState, initialData.id, hasErrors]);
 
     return (
-        <div className="h-screen flex flex-col">
+        <div className="h-screen flex flex-col bg-zinc-50 font-sans text-zinc-900 overflow-hidden">
             <BuilderHeader syncStatus={currentDisplayStatus} formId={initialData.id} />
 
-            <div className="flex flex-1">
+            <div className="flex flex-1 overflow-hidden">
                 <QuestionsSidebar />
 
-                <div className="flex flex-col flex-1 bg-slate-100">
-                    <div className="flex-1 p-8 overflow-y-auto">
-                        {currentTab === "questions" && (<FormCanvas />)}
-                        {currentTab === "logic" && (<LogicMap />)}
-                    </div>
+                <div className="flex-1 bg-zinc-50/80 overflow-y-auto relative flex flex-col">
+                    {currentTab === "questions" && <FormCanvas />}
+                    {currentTab === "logic" && (
+                        <div className="flex-1 h-full w-full">
+                            <LogicMap />
+                        </div>
+                    )}
                 </div>
 
-                <QuestionSettings />
+                {currentTab === "questions" && <QuestionSettings />}
             </div>
         </div>
     );
-};
+}

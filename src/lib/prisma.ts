@@ -3,16 +3,17 @@ import pg from "pg";
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
-    prisma: PrismaClient | undefined;
+    prisma?: PrismaClient;
+    pgPool?: pg.Pool;
 };
 
-if (!globalForPrisma.prisma) {
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-    const adapter = new PrismaPg(pool);
+const pool = globalForPrisma.pgPool ?? new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 
-    globalForPrisma.prisma = new PrismaClient({ adapter });
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+
+if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = prisma;
+    globalForPrisma.pgPool = pool;
 }
 
-const prisma = globalForPrisma.prisma;
-
-export { prisma };

@@ -77,7 +77,7 @@ export default function FormOptions({ optionId, optionValue, index }: { optionId
 
             <input
                 type="text"
-                value={optionValue}
+                value={`${optionValue}`}
                 onChange={handleUpdateOption}
                 placeholder={`Option ${index + 1}`}
                 className="flex-1 bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none px-1"

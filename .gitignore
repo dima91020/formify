@@ -43,3 +43,6 @@ next-env.d.ts
 
 # tasks & roadmap
 TASKS.md
+
+*storybook.log
+storybook-static
