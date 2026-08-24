@@ -9,7 +9,7 @@ const questionSchema = z.object({
     options: z.array(z.object({ id: z.string(), value: z.string() })).optional(),
     condition: z.object({
         targetQuestionId: z.string(),
-        expectedValue: z.union([z.string(), z.array(z.string())]),
+        expectedValue: z.union([z.string(), z.number(), z.array(z.string())]),
     }).optional(),
 });
 
