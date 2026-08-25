@@ -65,9 +65,9 @@ export default function FormCanvas() {
     };
 
     return (
-        <main className="flex-1 flex overflow-hidden items-center justify-center p-6 sm:p-12 min-h-[calc(100vh-4rem)]">
+        <main className="flex-1 flex overflow-y-auto items-center justify-center p-4 pb-28 sm:p-12 min-h-[calc(100vh-4rem)]">
             {questions.length > 0 && activeQuestion ? (
-                <div className="w-full max-w-xl bg-white p-8 sm:p-12 rounded-3xl shadow-sm border border-zinc-200/80 transition-all">
+                <div className="w-full max-w-xl bg-white p-6 sm:p-12 rounded-2xl sm:rounded-3xl shadow-sm border border-zinc-200/80 transition-all">
                     <div className="flex items-center justify-between mb-4 h-6">
                         <span className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-widest">
                             Question {questions.indexOf(activeQuestion) + 1} of {questions.length}
@@ -82,7 +82,7 @@ export default function FormCanvas() {
                     <div className="mb-8">
                         <input
                             type="text"
-                            className="text-xl sm:text-2xl font-bold text-zinc-900 bg-transparent hover:bg-zinc-50 focus:bg-white focus:ring-1 focus:ring-zinc-900 rounded-xl px-3 py-2 transition-all w-full leading-tight placeholder:text-zinc-300"
+                            className="text-lg sm:text-2xl font-bold text-zinc-900 bg-transparent hover:bg-zinc-50 focus:bg-white focus:ring-1 focus:ring-zinc-900 rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 transition-all w-full leading-tight placeholder:text-zinc-300"
                             value={activeQuestion.title}
                             placeholder="Enter your question title here..."
                             onChange={(e) =>

@@ -17,7 +17,7 @@ const TYPE_ICONS: Record<string, typeof Type> = {
     DATE: Calendar,
 };
 
-export default function SidebarItem({ question }: { question: Question }) {
+export default function SidebarItem({ question, onItemClick }: { question: Question, onItemClick?: () => void }) {
     const questions = useAppSelector((state) => state.form.questions);
     const activeQuestionId = useAppSelector(state => state.form.activeQuestionId);
     const dispatch = useAppDispatch();
@@ -42,7 +42,10 @@ export default function SidebarItem({ question }: { question: Question }) {
         <div
             ref={setNodeRef}
             style={style}
-            onClick={() => dispatch(setActiveQuestion(question.id))}
+            onClick={() => {
+                dispatch(setActiveQuestion(question.id));
+                onItemClick?.();
+            }}
             className={clsx(
                 "group relative flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer text-xs font-medium transition-all select-none",
                 isActive
