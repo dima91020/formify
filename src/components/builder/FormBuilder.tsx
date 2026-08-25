@@ -135,7 +135,7 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
             )}
 
             <Sheet open={activeMobileDrawer === "questions"} onOpenChange={(open) => !open && setActiveMobileDrawer(null)}>
-                <SheetContent side="bottom" className="max-h-[80vh] p-4 pt-6 flex flex-col">
+                <SheetContent side="bottom" onOpenAutoFocus={(e) => e.preventDefault()} className="max-h-[80vh] p-4 pt-6 flex flex-col">
                     <SheetHeader className="mb-2">
                         <SheetTitle>Questions</SheetTitle>
                     </SheetHeader>
@@ -144,7 +144,7 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
             </Sheet>
 
             <Sheet open={activeMobileDrawer === "settings"} onOpenChange={(open) => !open && setActiveMobileDrawer(null)}>
-                <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto p-4 pt-6 flex flex-col">
+                <SheetContent side="bottom" onOpenAutoFocus={(e) => e.preventDefault()} className="max-h-[85vh] overflow-y-auto p-4 pt-6 flex flex-col">
                     <SheetHeader className="mb-2">
                         <SheetTitle>Settings</SheetTitle>
                     </SheetHeader>
