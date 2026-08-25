@@ -38,25 +38,25 @@ export default function BuilderHeader({ syncStatus, formId }: { syncStatus: SYNC
     };
 
     return (
-        <header className="h-16 border-b border-zinc-200/80 px-6 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-30 shadow-2xs">
-            <div className="flex items-center gap-3.5 max-w-sm w-full">
+        <header className="h-16 border-b border-zinc-200/80 px-3 sm:px-6 gap-2 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-30 shadow-2xs">
+            <div className="flex items-center gap-3.5 max-w-[140px] sm:max-w-sm w-full">
                 <Link
                     href="/dashboard"
-                    className="p-2 rounded-xl text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-all"
+                    className="shrink-0 p-2 rounded-xl text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-all"
                     title="Back to Dashboard"
                 >
                     <ArrowLeft className="h-4 w-4" />
                 </Link>
-                <div className="h-5 w-px bg-zinc-200" />
+                <div className="shrink-0 h-5 w-px bg-zinc-200" />
                 <input
-                    className="text-sm font-semibold text-zinc-900 bg-transparent hover:bg-zinc-100/70 focus:bg-white focus:ring-1 focus:ring-zinc-900 rounded-lg px-2.5 py-1.5 transition-all w-full truncate placeholder:text-zinc-400"
+                    className="text-xs sm:text-sm font-semibold text-zinc-900 bg-transparent hover:bg-zinc-100/70 focus:bg-white focus:ring-1 focus:ring-zinc-900 rounded-lg px-2.5 py-1.5 transition-all w-full truncate placeholder:text-zinc-400"
                     value={formState.title}
                     onChange={(e) => dispatch(setTitle(e.target.value))}
                     placeholder="Untitled Form"
                 />
             </div>
 
-            <div className="flex items-center p-1 rounded-xl bg-zinc-100 border border-zinc-200/80 text-xs font-medium">
+            <div className="shrink-0 flex items-center p-1 rounded-xl bg-zinc-100 border border-zinc-200/80 text-xs font-medium">
                 {TABS.map((tab) => {
                     const { id, label, icon: Icon } = tab;
                     const isActive = currentTab === id;
@@ -67,37 +67,37 @@ export default function BuilderHeader({ syncStatus, formId }: { syncStatus: SYNC
                             type="button"
                             onClick={() => handleTabChange(id)}
                             className={clsx(
-                                "flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all select-none cursor-pointer",
+                                "flex items-center gap-2 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg transition-all select-none cursor-pointer",
                                 isActive
                                     ? "bg-white text-zinc-950 font-semibold shadow-xs"
                                     : "text-zinc-500 hover:text-zinc-900"
                             )}
                         >
                             <Icon className="h-3.5 w-3.5" />
-                            <span>{label}</span>
+                            <span className="hidden sm:inline">{label}</span>
                         </button>
                     );
                 })}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="shrink-0 flex items-center gap-3">
                 <div className="flex items-center gap-1.5 text-xs font-medium">
                     {syncStatus === SYNC_STATUS.Saving && (
                         <span className="flex items-center gap-1.5 text-zinc-500">
                             <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" />
-                            <span>Saving...</span>
+                            <span className="hidden md:inline">Saving...</span>
                         </span>
                     )}
                     {syncStatus === SYNC_STATUS.Saved && (
                         <span className="flex items-center gap-1.5 text-emerald-600">
                             <CheckCircle2 className="h-3.5 w-3.5" />
-                            <span>Saved</span>
+                            <span className="hidden md:inline">Saved</span>
                         </span>
                     )}
                     {syncStatus === SYNC_STATUS.Error && (
                         <span className="flex items-center gap-1.5 text-red-500">
                             <span className="w-2 h-2 rounded-full bg-red-500" />
-                            <span>Error saving</span>
+                            <span className="hidden md:inline">Error saving</span>
                         </span>
                     )}
                 </div>
@@ -116,7 +116,7 @@ export default function BuilderHeader({ syncStatus, formId }: { syncStatus: SYNC
                         ) : (
                             <>
                                 <ExternalLink className="h-3.5 w-3.5 text-zinc-500" />
-                                <span>Share Form</span>
+                                <span className="hidden sm:inline">Share Form</span>
                             </>
                         )}
                     </button>

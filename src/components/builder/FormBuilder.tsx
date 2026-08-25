@@ -14,6 +14,8 @@ import BuilderHeader from "@/components/builder/BuilderHeader";
 import {useSearchParams} from "next/navigation";
 import {hasDuplicateOptions} from "@/utils/validators";
 import LogicMap from "@/components/builder/LogicMap";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
+import { Layers, Settings2 } from "lucide-react";
 
 export enum SYNC_STATUS {
     Saved = "Saved",
@@ -29,6 +31,8 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
     const searchParams = useSearchParams();
     const currentTab = searchParams.get("tab") || 'questions';
     const isInitialized = useRef(false);
+    const [activeMobileDrawer, setActiveMobileDrawer] = useState<"questions" | "settings" | null>(null);
+    const activeQuestionIndex = formState.questions.findIndex(q => q.id === formState.activeQuestionId);
 
     const lastSavedData = useRef(JSON.stringify({
         title: initialData.title,
@@ -92,7 +96,7 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
             <BuilderHeader syncStatus={currentDisplayStatus} formId={initialData.id} />
 
             <div className="flex flex-1 overflow-hidden">
-                <QuestionsSidebar />
+                <QuestionsSidebar className="hidden md:flex w-72 bg-white border-r border-zinc-200/80 flex-col h-[calc(100vh-4rem)] select-none shrink-0" />
 
                 <div className="flex-1 bg-zinc-50/80 overflow-y-auto relative flex flex-col">
                     {currentTab === "questions" && <FormCanvas />}
@@ -103,8 +107,50 @@ export default function FormBuilder({ initialData }: { initialData: Form }) {
                     )}
                 </div>
 
-                {currentTab === "questions" && <QuestionSettings />}
+                {currentTab === "questions" && <QuestionSettings className="hidden lg:flex w-80 bg-white border-l border-zinc-200/80 p-6 h-[calc(100vh-4rem)] overflow-y-auto flex-col gap-6 select-none scrollbar-thin scrollbar-thumb-zinc-200 shrink-0" />}
             </div>
+
+            {currentTab === "questions" && (
+                <div className="md:hidden flex justify-between items-center fixed bottom-4 inset-x-4 z-40 bg-zinc-950/90 rounded-2xl backdrop-blur-md text-white p-1.5 shadow-2xl border border-white/10 select-none">
+                    <button
+                        type="button"
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-semibold transition-all cursor-pointer"
+                        onClick={() => setActiveMobileDrawer("questions")}
+                    >
+                        <Layers className="w-4 h-4" />
+                        <span>Questions ({formState.questions.length})</span>
+                    </button>
+
+                    <span>{activeQuestionIndex >= 0 ? `Q${activeQuestionIndex + 1} of ${formState.questions.length}` : ""}</span>
+
+                    <button
+                        type="button"
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-semibold transition-all cursor-pointer"
+                        onClick={() => setActiveMobileDrawer("settings")}
+                    >
+                        <Settings2 className="w-4 h-4" />
+                        <span>Settings</span>
+                    </button>
+                </div>
+            )}
+
+            <Sheet open={activeMobileDrawer === "questions"} onOpenChange={(open) => !open && setActiveMobileDrawer(null)}>
+                <SheetContent side="bottom" className="max-h-[80vh] p-4 pt-6 flex flex-col">
+                    <SheetHeader className="mb-2">
+                        <SheetTitle>Questions</SheetTitle>
+                    </SheetHeader>
+                    <QuestionsSidebar className="w-full flex flex-col max-h-[60vh] border-none p-0" onItemClick={() => setActiveMobileDrawer(null)} />
+                </SheetContent>
+            </Sheet>
+
+            <Sheet open={activeMobileDrawer === "settings"} onOpenChange={(open) => !open && setActiveMobileDrawer(null)}>
+                <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto p-4 pt-6 flex flex-col">
+                    <SheetHeader className="mb-2">
+                        <SheetTitle>Settings</SheetTitle>
+                    </SheetHeader>
+                    <QuestionSettings className="w-full flex flex-col gap-6 p-0 border-none pb-6" />
+                </SheetContent>
+            </Sheet>
         </div>
     );
 }

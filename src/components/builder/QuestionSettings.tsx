@@ -9,7 +9,7 @@ import { AlertCircle, Calendar, CheckSquare, Hash, ListFilter, Mail, SlidersHori
 import clsx from "clsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
-export default function QuestionSettings() {
+export default function QuestionSettings({ className }: { className?: string }) {
     const questions = useAppSelector(state => state.form.questions);
     const activeQuestionId = useAppSelector(state => state.form.activeQuestionId);
     const dispatch = useAppDispatch();
@@ -20,14 +20,16 @@ export default function QuestionSettings() {
 
     if (!activeQuestion) {
         return (
-            <aside className="w-80 bg-white border-l border-zinc-200/80 p-8 flex flex-col items-center justify-center text-center select-none h-[calc(100vh-4rem)]">
-                <div className="w-12 h-12 rounded-2xl bg-zinc-100 flex items-center justify-center text-zinc-400 mb-3">
-                    <SlidersHorizontal className="h-5 w-5" />
+            <aside className={className || "w-80 bg-white border-l border-zinc-200/80 p-8 flex flex-col items-center justify-center text-center select-none h-[calc(100vh-4rem)]"}>
+                <div className="w-full flex flex-col items-center justify-center text-center py-12 px-4">
+                    <div className="w-12 h-12 rounded-2xl bg-zinc-100 flex items-center justify-center text-zinc-400 mb-3">
+                        <SlidersHorizontal className="h-5 w-5" />
+                    </div>
+                    <h4 className="text-xs font-bold text-zinc-900 mb-1">No Question Selected</h4>
+                    <p className="text-[11px] text-zinc-400 leading-relaxed max-w-[200px]">
+                        Select a question from the sidebar to edit its title, type, and branching logic.
+                    </p>
                 </div>
-                <h4 className="text-xs font-bold text-zinc-900 mb-1">No Question Selected</h4>
-                <p className="text-[11px] text-zinc-400 leading-relaxed max-w-[200px]">
-                    Select a question from the sidebar to edit its title, type, and branching logic.
-                </p>
             </aside>
         );
     }
@@ -112,7 +114,7 @@ export default function QuestionSettings() {
     }
 
     return (
-        <aside className="w-80 bg-white border-l border-zinc-200/80 p-6 h-[calc(100vh-4rem)] overflow-y-auto flex flex-col gap-6 select-none scrollbar-thin scrollbar-thumb-zinc-200">
+        <aside className={className || "w-80 bg-white border-l border-zinc-200/80 p-6 h-[calc(100vh-4rem)] overflow-y-auto flex flex-col gap-6 select-none scrollbar-thin scrollbar-thumb-zinc-200"}>
             {/* Header / Title & Active Question Badge */}
             <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
