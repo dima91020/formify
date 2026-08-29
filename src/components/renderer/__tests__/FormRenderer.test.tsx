@@ -5,8 +5,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import FormRenderer from '../FormRenderer';
 import responseReducer from '@/store/slices/responseSlice';
 import formReducer from '@/store/slices/formSlice';
-import { Options } from '@/components/builder/FormOptions';
-import { Question } from '@/schemas/form.schema';
+import { Question, QuestionType } from '@/schemas/form.schema';
 import { submitFormResponse } from '@/actions/response.actions';
 import userEvent from '@testing-library/user-event';
 
@@ -29,13 +28,13 @@ const mockQuestions: Question[] = [
     {
         id: 'q1',
         title: 'Як вас звати?',
-        type: Options.TEXT,
+        type: QuestionType.TEXT,
         required: true,
     },
     {
         id: 'q2',
         title: 'Оберіть вашу роль',
-        type: Options.CHOICE,
+        type: QuestionType.CHOICE,
         required: false,
         options: [{ id: 'opt1', value: 'Developer' }, { id: 'opt2', value: 'Designer' }],
     }

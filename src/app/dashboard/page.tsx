@@ -1,7 +1,7 @@
 import Link from "next/link";
-import {auth} from "@/auth";
-import {redirect} from "next/navigation";
-import {prisma} from "@/lib/prisma";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import FormCard from "@/components/dashboard/FormCard";
 import CreateDraftFormButton from "@/components/dashboard/CreateDraftFormButton";
 

@@ -2,7 +2,8 @@
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateQuestion } from "@/store/slices/formSlice";
-import FormOptions, { Options } from "@/components/builder/FormOptions";
+import FormOptions from "@/components/builder/FormOptions";
+import { QuestionType } from "@/schemas/form.schema";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Calendar, Mail, Plus, Sparkles, Star } from "lucide-react";
@@ -91,13 +92,13 @@ export default function FormCanvas() {
                         />
                     </div>
 
-                    {activeQuestion.type === Options.TEXT && (
+                    {activeQuestion.type === QuestionType.TEXT && (
 						<div className="w-full h-12 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/60 px-4 flex items-center text-xs text-zinc-400">
 						    Respondent types an open-ended answer here...
 						</div>
                     )}
 
-                    {(activeQuestion.type === Options.CHOICE || activeQuestion.type === Options.CHECKBOX) && (
+                    {(activeQuestion.type === QuestionType.CHOICE || activeQuestion.type === QuestionType.CHECKBOX) && (
                         <div className="w-full space-y-3">
                             <div className="w-full max-h-[300px] overflow-y-auto pr-1.5 space-y-2 scrollbar-thin scrollbar-thumb-zinc-200">
                                 {renderQuestions()}
@@ -114,7 +115,7 @@ export default function FormCanvas() {
                         </div>
                     )}
 
-                    {activeQuestion.type === Options.RATING && (
+                    {activeQuestion.type === QuestionType.RATING && (
                         <div className="w-full flex flex-col items-center gap-3 pt-2">
                             <div className="flex items-center gap-2 sm:gap-3">
                                 {[1, 2, 3, 4, 5].map((star) => (
@@ -134,7 +135,7 @@ export default function FormCanvas() {
                         </div>
                     )}
 
-                    {activeQuestion.type === Options.NPS && (
+                    {activeQuestion.type === QuestionType.NPS && (
                         <div className="w-full flex flex-col gap-3 pt-2">
                             <div className="grid grid-cols-11 gap-1 sm:gap-1.5">
                                 {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((val) => (
@@ -154,7 +155,7 @@ export default function FormCanvas() {
                         </div>
                     )}
 
-                    {activeQuestion.type === Options.EMAIL && (
+                    {activeQuestion.type === QuestionType.EMAIL && (
                         <div className="w-full relative">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
                                 <Mail className="h-4 w-4" />
@@ -168,7 +169,7 @@ export default function FormCanvas() {
                         </div>
                     )}
 
-                    {activeQuestion.type === Options.DATE && (
+                    {activeQuestion.type === QuestionType.DATE && (
                         <div className="w-full relative">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
                                 <Calendar className="h-4 w-4" />
