@@ -1,11 +1,21 @@
 import * as z from "zod";
 
+export const questionTypeSchema = z.enum([
+    "TEXT", 
+    "CHOICE", 
+    "CHECKBOX", 
+    "RATING", 
+    "NPS", 
+    "EMAIL", 
+    "DATE"
+]);
+
 const questionSchema = z.object({
     id: z.string(),
     title: z.string().min(3, 'Title should be at least 3 characters')
         .max(100, "Title should be less than 100 characters"),
     required: z.boolean(),
-    type: z.enum(["TEXT", "CHOICE", "CHECKBOX", "RATING", "NPS", "EMAIL", "DATE"]),
+    type: questionTypeSchema,
     options: z.array(z.object({ id: z.string(), value: z.string() })).optional(),
     condition: z.object({
         targetQuestionId: z.string(),
@@ -31,6 +41,9 @@ export const createFormSchema = z.object({
    schema: formContentSchema,
 });
 
+
+export const QuestionType = questionTypeSchema.enum;
+export type QuestionType = z.infer<typeof questionTypeSchema>;
 export type Question = z.infer<typeof questionSchema>;
 export type LogicRule = z.infer<typeof logicRuleSchema>;
 export type FormContent = z.infer<typeof formContentSchema>;

@@ -1,9 +1,9 @@
 import {Handle, Position, NodeProps, Node} from "@xyflow/react"
-import {Options} from "@/components/builder/FormOptions";
+import { QuestionType } from "@/schemas/form.schema";
 
 export type QuestionNodeData = {
     title: string;
-    type: Options;
+    type: QuestionType;
     options?: {
         id: string,
         value: string,
