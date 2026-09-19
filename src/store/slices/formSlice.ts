@@ -1,6 +1,6 @@
-import {Question, LogicRule, CreateFormInput, QuestionType} from "@/schemas/form.schema";
-import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {arrayMove} from "@dnd-kit/sortable";
+import { Question, LogicRule, CreateFormInput, QuestionType } from "@/schemas/form.schema";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { arrayMove } from "@dnd-kit/sortable";
 import getDefaultExpectedValue from "@/utils/getDefaultExpectedValue";
 
 export interface FormBuilderState {
@@ -40,7 +40,7 @@ export const formBuilderSlice = createSlice({
                 }
             })
         },
-        updateQuestion: (state, action: PayloadAction<{id: string, updates: Partial<Question>}>) => {
+        updateQuestion: (state, action: PayloadAction<{ id: string, updates: Partial<Question> }>) => {
             const questionToUpdateIndex = state.questions.findIndex(
                 (question) => question.id === action.payload.id
             );
@@ -80,7 +80,7 @@ export const formBuilderSlice = createSlice({
         setTitle: (state, action: PayloadAction<string>) => {
             state.title = action.payload;
         },
-        reorderQuestions: (state, action: PayloadAction<{activeId: string, overId: string}>) => {
+        reorderQuestions: (state, action: PayloadAction<{ activeId: string, overId: string }>) => {
             const activeQuestionsIndex = state.questions.findIndex((q) => q.id === action.payload.activeId);
             const overQuestionsIndex = state.questions.findIndex((q) => q.id === action.payload.overId);
 
@@ -104,10 +104,10 @@ export const formBuilderSlice = createSlice({
         }
     },
     selectors: {
-        selectQuestions: (state) => state.questions,
-        selectActiveQuestionId: (state) => state.activeQuestionId,
-        selectActiveQuestion: (state) => state.questions.find((q) => q.id === state.activeQuestionId) ?? null,
-        selectActiveQuestionIndex: (state) => {
+        selectFormQuestions: (state) => state.questions,
+        selectFormActiveQuestionId: (state) => state.activeQuestionId,
+        selectFormActiveQuestion: (state) => state.questions.find((q) => q.id === state.activeQuestionId) ?? null,
+        selectFormActiveQuestionIndex: (state) => {
             if (!state.activeQuestionId) return null;
             const index = state.questions.findIndex((q) => q.id === state.activeQuestionId);
             return index === -1 ? null : index;
@@ -116,10 +116,10 @@ export const formBuilderSlice = createSlice({
 });
 
 export const {
-    selectQuestions,
-    selectActiveQuestionId,
-    selectActiveQuestion,
-    selectActiveQuestionIndex,
+    selectFormQuestions,
+    selectFormActiveQuestionId,
+    selectFormActiveQuestion,
+    selectFormActiveQuestionIndex,
 } = formBuilderSlice.selectors;
 
 export const {

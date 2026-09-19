@@ -9,6 +9,8 @@ import clsx from "clsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import getDefaultExpectedValue from "@/utils/getDefaultExpectedValue";
 import { useActiveQuestion } from "@/hooks/useActiveQuestion";
+import DateQuestionField from "../renderer/FormRendererFields/DateQuestionField";
+import { getArrayAnswer, getNumberAnswer, getStringAnswer } from "@/utils/answerGetters";
 
 export default function QuestionSettings({ className }: { className?: string }) {
     const dispatch = useAppDispatch();
@@ -247,7 +249,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             <input
                                                 type="text"
                                                 className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all shadow-2xs cursor-pointer"
-                                                value={typeof activeQuestion.condition?.expectedValue === "string" ? activeQuestion.condition.expectedValue : ""}
+                                                value={getStringAnswer(activeQuestion.condition?.expectedValue)}
                                                 onChange={(e) => {
                                                     if (!activeQuestion.condition) return;
 
@@ -272,7 +274,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to option</label>
                                             <div className="flex flex-col gap-1.5 pt-0.5">
                                                 {question.options?.map(({ id, value }, index) => {
-                                                    const isChecked = activeQuestion.condition?.expectedValue === value;
+                                                    const isChecked = getStringAnswer(activeQuestion.condition?.expectedValue) === value;
                                                     const charLabel = chars[index] || String(index + 1);
 
                                                     return (
@@ -314,15 +316,13 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                     );
                                 } else if (question.type === QuestionType.CHECKBOX) {
                                     const chars = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
-                                    const currentExpectedValue = activeQuestion.condition?.expectedValue;
-                                    const isExpectedValueArray = Array.isArray(currentExpectedValue);
 
                                     return (
                                         <div key={question.id} className="space-y-1.5">
                                             <label className="text-xs font-semibold text-zinc-700">Includes option(s)</label>
                                             <div className="flex flex-col gap-1.5 pt-0.5">
                                                 {question.options?.map(({ id, value }, index) => {
-                                                    const isChecked = isExpectedValueArray ? currentExpectedValue.includes(value) : false;
+                                                    const isChecked = getArrayAnswer(activeQuestion.condition?.expectedValue).includes(value);
                                                     const charLabel = chars[index] || String(index + 1);
 
                                                     return (
@@ -385,8 +385,8 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to rating</label>
                                             <div className="w-full flex flex-col items-center gap-2 pt-1">
                                                 <div className="flex items-center gap-1">
-                                                    {[1, 2, 3, 4, 5].map((star, index) => {
-                                                        const isSelected = index <= currentRating - 1;
+                                                    {[1, 2, 3, 4, 5].map((star) => {
+                                                        const isSelected = getNumberAnswer(star) <= currentRating;
                                                         return (
                                                             <button
                                                                 key={star}
@@ -400,7 +400,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                                         updates: {
                                                                             condition: {
                                                                                 ...activeQuestion.condition,
-                                                                                expectedValue: index + 1,
+                                                                                expectedValue: star,
                                                                             }
                                                                         }
                                                                     }));
@@ -429,7 +429,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                 {/* Row 1: 0 - 5 */}
                                                 <div className="flex items-center justify-between gap-1">
                                                     {[0, 1, 2, 3, 4, 5].map((val) => {
-                                                        const isSelected = activeQuestion.condition?.expectedValue === val;
+                                                        const isSelected = getNumberAnswer(activeQuestion.condition?.expectedValue) === val;
                                                         return (
                                                             <button
                                                                 key={val}
@@ -462,7 +462,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
 
                                                 <div className="flex items-center justify-center gap-2">
                                                     {[6, 7, 8, 9, 10].map((val) => {
-                                                        const isSelected = activeQuestion.condition?.expectedValue === val;
+                                                        const isSelected = getNumberAnswer(activeQuestion.condition?.expectedValue)  === val;
                                                         return (
                                                             <button
                                                                 key={val}
@@ -508,7 +508,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                 type="email"
                                                 placeholder="e.g. alex@company.com"
                                                 className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all shadow-2xs"
-                                                value={typeof activeQuestion.condition?.expectedValue === "string" ? activeQuestion.condition.expectedValue : ""}
+                                                value={getStringAnswer(activeQuestion.condition?.expectedValue)}
                                                 onChange={(e) => {
                                                     if (!activeQuestion.condition) return;
                                                     dispatch(updateQuestion({
@@ -528,10 +528,8 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                     return (
                                         <div key={question.id} className="space-y-1.5">
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to date</label>
-                                            <input
-                                                type="date"
-                                                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all shadow-2xs cursor-pointer"
-                                                value={typeof activeQuestion.condition?.expectedValue === "string" ? activeQuestion.condition.expectedValue : ""}
+                                            <DateQuestionField 
+                                                selectedValue={getStringAnswer(activeQuestion.condition?.expectedValue)}
                                                 onChange={(e) => {
                                                     if (!activeQuestion.condition) return;
                                                     dispatch(updateQuestion({
@@ -539,11 +537,12 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                         updates: {
                                                             condition: {
                                                                 ...activeQuestion.condition,
-                                                                expectedValue: e.target.value,
+                                                                expectedValue: e,
                                                             }
                                                         }
                                                     }))
                                                 }}
+                                                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all shadow-2xs cursor-pointer"
                                             />
                                         </div>
                                     );

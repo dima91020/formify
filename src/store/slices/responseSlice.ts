@@ -1,8 +1,8 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {Answers} from "@/schemas/response.schema";
+import {AnswerValue} from "@/schemas/response.schema";
 
 export interface ResponseState {
-    answers: Answers,
+    answers: Record<string, AnswerValue>,
     currentQuestionId: string | null,
     history: string[],
 }
@@ -17,8 +17,17 @@ export const responseSlice = createSlice({
     name: "response",
     initialState,
     reducers: {
-        updateAnswer: (state, action: PayloadAction<{questionId: string, value: string | string[]}>) => {
+        updateAnswer: (state, action: PayloadAction<{questionId: string, value: AnswerValue}>) => {
             if (!state.currentQuestionId) return;
+
+            const isEmpty = 
+                action.payload.value === "" ||
+                (Array.isArray(action.payload.value) && action.payload.value.length === 0);
+
+            if (isEmpty) {
+                delete state.answers[action.payload.questionId];
+                return;
+            }
 
             state.answers[action.payload.questionId] = action.payload.value;
         },
@@ -34,11 +43,28 @@ export const responseSlice = createSlice({
         toggleNextQuestion: (state, action: PayloadAction<string>) => {
             state.history.push(action.payload);
         },
-        restoreProgress: (state, action: PayloadAction<ResponseState>) => {
+        restoreProgress: (_, action: PayloadAction<ResponseState>) => {
             return action.payload;
         }
+    },
+    selectors: {
+        selectResponseAnswers: (state) => state.answers,
+        selectResponseCurrentQuestionId: (state) => state.currentQuestionId,
+        selectResponseHistory: (state) => state.history,
     }
 })
 
-export const { updateAnswer, setCurrentQuestionId, togglePrevQuestion, toggleNextQuestion, restoreProgress } = responseSlice.actions;
+export const {
+    updateAnswer,
+    setCurrentQuestionId,
+    togglePrevQuestion,
+    toggleNextQuestion,
+    restoreProgress } = responseSlice.actions;
+
+export const { 
+    selectResponseAnswers,
+    selectResponseCurrentQuestionId,
+    selectResponseHistory,
+} = responseSlice.selectors;
+
 export default responseSlice.reducer;

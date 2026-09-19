@@ -10,13 +10,18 @@ export const questionTypeSchema = z.enum([
     "DATE"
 ]);
 
+export const questionOptionSchema = z.object({
+    id: z.string(),
+    value: z.string()
+});
+
 const questionSchema = z.object({
     id: z.string(),
     title: z.string().min(3, 'Title should be at least 3 characters')
         .max(100, "Title should be less than 100 characters"),
     required: z.boolean(),
     type: questionTypeSchema,
-    options: z.array(z.object({ id: z.string(), value: z.string() })).optional(),
+    options: z.array(questionOptionSchema).optional(),
     condition: z.object({
         targetQuestionId: z.string(),
         expectedValue: z.union([z.string(), z.number(), z.array(z.string())]),
@@ -43,6 +48,7 @@ export const createFormSchema = z.object({
 
 
 export const QuestionType = questionTypeSchema.enum;
+export type QuestionOption = z.infer<typeof questionOptionSchema>;
 export type QuestionType = z.infer<typeof questionTypeSchema>;
 export type Question = z.infer<typeof questionSchema>;
 export type LogicRule = z.infer<typeof logicRuleSchema>;

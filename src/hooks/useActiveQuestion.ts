@@ -1,10 +1,14 @@
 import { useAppSelector } from "@/store/hooks"
-import { selectActiveQuestion, selectActiveQuestionIndex, selectQuestions } from "@/store/slices/formSlice"
+import {
+    selectFormActiveQuestion,
+    selectFormActiveQuestionIndex,
+    selectFormQuestions
+} from "@/store/slices/formSlice"
 
 export const useActiveQuestion = () => {
-    const questions = useAppSelector(selectQuestions);
-    const activeQuestion = useAppSelector(selectActiveQuestion);
-    const activeQuestionIndex = useAppSelector(selectActiveQuestionIndex);
+    const questions = useAppSelector(selectFormQuestions);
+    const activeQuestion = useAppSelector(selectFormActiveQuestion);
+    const activeQuestionIndex = useAppSelector(selectFormActiveQuestionIndex);
     const questionNumber = activeQuestionIndex !== null ? activeQuestionIndex + 1 : 0;
 
     const previousQuestions = (activeQuestionIndex !== null && activeQuestionIndex > 0)
@@ -22,6 +26,11 @@ export const useActiveQuestion = () => {
         ? questions[activeQuestionIndex + 1]
         : null;
 
+    // const findQuestionIndexById = (questionId: string) => {
+    //     const index = questions.findIndex((q) => q.id === questionId);
+    //     return index === -1 ? null : index;
+    // }
+
     return {
         questions,
         activeQuestion,
@@ -32,6 +41,7 @@ export const useActiveQuestion = () => {
         isFirstQuestion,
         isLastQuestion,
         previousQuestion,
-        nextQuestion
+        nextQuestion,
+        // findQuestionIndexById,
     }
 }
