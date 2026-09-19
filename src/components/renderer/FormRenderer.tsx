@@ -1,28 +1,42 @@
 'use client'
 
-import { Question } from "@/schemas/form.schema";
-import {useEffect, useState} from "react";
+import { Question, QuestionType } from "@/schemas/form.schema";
+import { useEffect, useState } from "react";
 import { submitFormResponse } from "@/actions/response.actions";
 import { FaSpinner } from "react-icons/fa";
-import {useAppDispatch, useAppSelector} from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
     restoreProgress,
+    selectResponseAnswers,
+    selectResponseCurrentQuestionId,
+    selectResponseHistory,
     setCurrentQuestionId,
     toggleNextQuestion,
     togglePrevQuestion,
     updateAnswer,
 } from "@/store/slices/responseSlice";
-import {IoIosArrowBack} from "react-icons/io";
-import {Options} from "@/components/builder/FormOptions";
-import {Answers} from "@/schemas/response.schema";
+import { IoIosArrowBack } from "react-icons/io";
+import { RawAnswers, } from "@/schemas/response.schema";
+import { isConditionMet } from "@/utils/isConditionMet";
+import TextQuestionField from "./FormRendererFields/TextQuestionField";
+import { getArrayAnswer, getNumberAnswer, getStringAnswer } from "@/utils/answerGetters";
+import ChoiceQuestionField from "./FormRendererFields/ChoiceQuestionField";
+import CheckboxQuestionField from "./FormRendererFields/CheckboxQuestionField";
+import RatingQuestionField from "./FormRendererFields/RatingQuestionField";
+import NpsQuestionField from "./FormRendererFields/NpsQuestionField";
+import EmailQuestionField from "./FormRendererFields/EmailQuestionField";
+import DateQuestionField from "./FormRendererFields/DateQuestionField";
+import { validatedAnswers } from "@/utils/validators";
 
 export default function FormRenderer({ questions, formId }: { questions: Question[], formId: string }) {
-    const currentQuestionId = useAppSelector((state) => state.response.currentQuestionId);
-    const answers = useAppSelector((state) => state.response.answers);
-    const history = useAppSelector((state) => state.response.history);
+    const currentResponseQuestionId = useAppSelector(selectResponseCurrentQuestionId);
+    const answers = useAppSelector(selectResponseAnswers);
+    const history = useAppSelector(selectResponseHistory);
     const dispatch = useAppDispatch();
 
-    const [errors, setErrors] = useState<string[]>([]);
+    // const { findQuestionIndexById } = useActiveQuestion();
+
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -39,55 +53,91 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
         }
     }, []);
 
-    const handleCheckboxChange = (questionId: string, optionValue: string) => {
-        setErrors(prev => prev.filter((v) => v !== questionId));
-        setGlobalError(null);
+    const currentQuestion = questions.find((q) => q.id === currentResponseQuestionId);
+    if (!currentQuestion) return null;
 
-        const currentSelected = (answers[questionId] as string[]) || [];
+    const removeError = (questionId: string) => {
+        setErrors(prev => {
+            const { [questionId]: _, ...rest } = prev;
+            return rest;
+        });
+        setGlobalError(null);
+    }
+
+    const handleTextChange = (questionId: string, value: string) => {
+        removeError(questionId);
+
+        dispatch(updateAnswer({ questionId, value: value.trim() }));
+    }
+
+    const handleCheckboxChange = (questionId: string, optionValue: string) => {
+        removeError(questionId);
+
+        const currentSelected = getArrayAnswer(answers[questionId]);
 
         if (currentSelected.includes(optionValue)) {
             dispatch(updateAnswer({ questionId, value: currentSelected.filter((item) => item !== optionValue) }));
         } else {
-            dispatch(updateAnswer({ questionId, value: [...currentSelected, optionValue]}));
+            dispatch(updateAnswer({ questionId, value: [...currentSelected, optionValue] }));
         }
     }
 
-    const handleTextChange = (questionId: string, value: string) => {
-        setErrors(prev => prev.filter((v) => v !== questionId));
-        setGlobalError(null);
+    const handleChoiceChange = (questionId: string, value: string) => {
+        removeError(questionId);
 
         dispatch(updateAnswer({ questionId, value: value.trim() }));
     }
 
-    const handleChoiceChange = (questionId: string, value: string) => {
-        setErrors(prev => prev.filter((v) => v !== questionId));
-        setGlobalError(null);
+    const handleStarChange = (questionId: string, star: number) => {
+        removeError(questionId);
 
-        dispatch(updateAnswer({ questionId, value: value.trim() }));
+        dispatch(updateAnswer({questionId, value: star}));
+    }
+
+    const handleNpsChange = (questionId: string, val: number) => {
+        removeError(questionId);
+
+        dispatch(updateAnswer({questionId, value: val}));
+    }
+
+    const handleEmailChange = (questionId: string, val: string) => {
+        removeError(questionId);
+
+        dispatch(updateAnswer({questionId, value: val}));
+    }
+
+    const handleDateChange = (questionId: string, date: string) => {
+        removeError(questionId);
+
+        dispatch(updateAnswer({questionId, value: date}));
     }
 
     async function handleSubmit() {
-        setErrors([]);
+        setErrors({});
         setGlobalError(null);
 
-        if (!currentQuestionId) return;
+        if (!currentQuestion) return;
 
-        if (questions[findQuestionIndexById(currentQuestionId)!].required) {
-            if (!answers[currentQuestionId] || !answers[currentQuestionId].length) {
-                setErrors((prev) => [...prev, currentQuestionId]);
+        const error = validatedAnswers(currentQuestion, answers[currentQuestion.id]);
 
-                return;
-            }
+        if (error) {
+            setErrors((prev) => ({ ...prev, [currentQuestion.id]: error }));
+
+            return;
         }
 
         try {
             setIsSubmitting(true);
 
-            const validIds = [...history, currentQuestionId];
+            const validIds = [...history, currentQuestion.id];
 
-            const answersToSave = Object.fromEntries(
-                Object.entries(answers).filter(([key]) => validIds.includes(key))
-            ) as Answers;
+            const answersToSave: RawAnswers = validIds
+                .filter((id) => answers[id] !== undefined)
+                .map((id) => ({
+                    questionId: id,
+                    type: questions.find((q) => q.id === id)?.type as QuestionType,
+                    value: answers[id],
+                }));
 
             const result = await submitFormResponse(formId, answersToSave);
 
@@ -104,57 +154,29 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
         }
     }
 
-    function findQuestionIndexById(questionId: string) {
+    const findQuestionIndexById = (questionId: string) => {
         const index = questions.findIndex((q) => q.id === questionId);
-
         return index === -1 ? null : index;
     }
 
     function getNextQuestion() {
-        if (!currentQuestionId) return null;
+        if (!currentQuestion) return null;
 
-        const currentIndex = findQuestionIndexById(currentQuestionId);
+        const currentIndex = findQuestionIndexById(currentQuestion.id);
         if (currentIndex === null) return null;
 
-        for (let i = currentIndex + 1; i < questions.length; i++) {
-            const question = questions[i];
+        for (const q of questions.slice(currentIndex + 1)) {
+            if (!q.condition) return q.id;
 
-            if (!question.condition) {
-                return question.id;
-            }
-
-            const targetAnswers = answers[question.condition.targetQuestionId];
-            const expectedValues = question.condition.expectedValue;
-            const targetQuestion = questions.find((q) => q.id === question.condition?.targetQuestionId);
-
-            if (targetQuestion?.type === Options.CHECKBOX) {
-                if (!Array.isArray(targetAnswers) || !Array.isArray(expectedValues)) {
-                    continue;
-                }
-
-                if (targetAnswers.length !== expectedValues.length) {
-                    continue;
-                }
-
-                const isMatch = expectedValues.every((option: string) =>
-                    targetAnswers.map(String).includes(String(option))
-                );
-
-                if (isMatch) {
-                    return question.id;
-                }
-            } else if (targetQuestion?.type === Options.TEXT || targetQuestion?.type === Options.CHOICE) {
-                if (String(targetAnswers) === String(expectedValues)) {
-                    return question.id;
-                }
+            if (isConditionMet(q.condition, answers[q.condition.targetQuestionId])) {
+                return q.id;
             }
         }
-
         return null;
     }
 
     const nextId = getNextQuestion();
-    const currentStep = currentQuestionId ? history.length + 1 : 0;
+    const currentStep = currentQuestion ? history.length + 1 : 0;
     const totalQuestions = questions.length;
     const progressPercentage = totalQuestions > 0 ? Math.min(100, Math.max(0, Math.round((currentStep / totalQuestions) * 100))) : 0;
 
@@ -184,64 +206,69 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
                 </div>
             )}
 
-            {questions
-                .filter((q) => q.id === currentQuestionId)
-                .map((question) => (
-                <div key={question.id} className="flex flex-col gap-3">
-                    <label className="text-lg text-gray-500">
-                        {findQuestionIndexById(question.id)! + 1}. {question.title} {question.required && (<span className="text-red-500">*</span>)}
-                    </label>
 
-                    {question.type === "TEXT" && (
-                        <input
-                            type="text"
-                            placeholder="Type your answer"
-                            className="text-gray-800 text-lg border-b-2 border-gray-200 bg-transparent focus:border-black focus:outline-none transition-colors py-2 w-full"
-                            value={(answers[question.id] as string) || ""}
-                            onChange={(e) => handleTextChange(question.id, e.target.value)}
-                        />
-                    )}
+            <div key={currentQuestion.id} className="flex flex-col gap-3">
+                <label className="text-lg text-gray-500">
+                    {findQuestionIndexById(currentQuestion.id)! + 1}. {currentQuestion.title} {currentQuestion.required && (<span className="text-red-500">*</span>)}
+                </label>
 
-                    {question.type === "CHOICE" && (
-                        <div className="flex flex-col gap-2">
-                            {question.options?.map(({ value }, index) => (
-                                <div key={index} className="flex items-center gap-3">
-                                    <input
-                                        name={question.id}
-                                        type="radio"
-                                        id={`${question.id}-choice-${index}`}
-                                        className="accent-black w-4 h-4 cursor-pointer"
-                                        checked={answers[question.id] === value}
-                                        onChange={() => handleChoiceChange(question.id, value)}
-                                    />
-                                    <label htmlFor={`${question.id}-choice-${index}`} className="cursor-pointer text-gray-700">{value}</label>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                {currentQuestion.type === QuestionType.TEXT && (
+                    <TextQuestionField
+                        value={getStringAnswer(answers[currentQuestion.id])}
+                        onChange={(value) => handleTextChange(currentQuestion.id, value)}
+                    />
+                )}
 
-                    {question.type === "CHECKBOX" && (
-                        <div className="flex flex-col gap-2">
-                            {question.options?.map(({ value }, index) => (
-                                <div key={index} className="flex items-center gap-3">
-                                    <input
-                                        name={question.id}
-                                        type="checkbox"
-                                        id={`${question.id}-checkbox-${index}`}
-                                        className="accent-black w-4 h-4 cursor-pointer"
-                                        checked={((answers[question.id] as string[]) || []).includes(value)}
-                                        onChange={() => handleCheckboxChange(question.id, value)}
-                                    />
-                                    <label htmlFor={`${question.id}-checkbox-${index}`} className="cursor-pointer text-gray-700">{value}</label>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    {errors.includes(question.id) && (
-                        <p className="text-sm text-red-500 mt-1">This field is required</p>
-                    )}
-                </div>
-            ))}
+                {currentQuestion.type === QuestionType.CHOICE && (
+                    <ChoiceQuestionField
+                        questionId={currentQuestion.id}
+                        options={currentQuestion.options}
+                        selectedValue={getStringAnswer(answers[currentQuestion.id])}
+                        onChange={(value) => handleChoiceChange(currentQuestion.id, value)}
+                    />
+                )}
+
+                {currentQuestion.type === QuestionType.CHECKBOX && (
+                    <CheckboxQuestionField
+                        questionId={currentQuestion.id}
+                        options={currentQuestion.options}
+                        selectedValues={getArrayAnswer(answers[currentQuestion.id])}
+                        onChange={(value) => handleCheckboxChange(currentQuestion.id, value)}
+                    />
+                )}
+
+                {currentQuestion.type === QuestionType.RATING && (
+                    <RatingQuestionField
+                        selectedValue={getNumberAnswer(answers[currentQuestion.id])}
+                        onChange={(value) => handleStarChange(currentQuestion.id, value)}
+                    />
+                )}
+
+                {currentQuestion.type === QuestionType.NPS && (
+                    <NpsQuestionField
+                        selectedValue={getNumberAnswer(answers[currentQuestion.id])}
+                        onChange={(value) => handleNpsChange(currentQuestion.id, value)}
+                    />
+                )}
+
+                {currentQuestion.type === QuestionType.EMAIL && (
+                    <EmailQuestionField
+                        selectedValue={getStringAnswer(answers[currentQuestion.id])}
+                        onChange={(value) => handleEmailChange(currentQuestion.id, value)}
+                    />
+                )}
+
+                {currentQuestion.type === QuestionType.DATE && (
+                    <DateQuestionField
+                        selectedValue={getStringAnswer(answers[currentQuestion.id])}
+                        onChange={(value) => handleDateChange(currentQuestion.id, value)}
+                    />
+                )}
+
+                {errors[currentQuestion.id] && (
+                    <p className="text-sm text-red-500 mt-1">{errors[currentQuestion.id]}</p>
+                )}
+            </div>
 
             {globalError && (
                 <p className="text-red-500 text-sm">{globalError}</p>
@@ -249,7 +276,7 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
 
             <div className="flex flex-row gap-3 justify-between w-full sm:w-auto mt-4 md:px-8 lg:px-14 xl:px-22">
                 <button
-                    className="bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="h-12 bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     onClick={() => dispatch(togglePrevQuestion())}
                     disabled={!history.length}
                     aria-label="Go back"
@@ -257,7 +284,7 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
                     <IoIosArrowBack />
                 </button>
 
-                {!nextId ? (
+                {findQuestionIndexById(currentQuestion.id) === questions.length - 1 ? (
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
@@ -274,22 +301,25 @@ export default function FormRenderer({ questions, formId }: { questions: Questio
                     </button>
                 ) : (
                     <button
-                        className="bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="h-12 bg-black hover:bg-gray-800 text-white rounded-md py-3 px-6 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         onClick={() => {
-                            if (!currentQuestionId) return;
+                            if (nextId) {
+                                if (!currentQuestion) return;
 
-                            if (questions[findQuestionIndexById(currentQuestionId)!].required) {
-                                if (!answers[currentQuestionId] || !answers[currentQuestionId].length) {
-                                    setErrors((prev) => [...prev, currentQuestionId]);
+                                const error = validatedAnswers(currentQuestion, answers[currentQuestion.id]);
+
+                                if (error) {
+                                    setErrors((prev) => ({ ...prev, [currentQuestion.id]: error }));
 
                                     return;
                                 }
-                            }
 
-                            dispatch(setCurrentQuestionId(nextId));
-                            dispatch(toggleNextQuestion(currentQuestionId));
+                                dispatch(setCurrentQuestionId(nextId));
+                                dispatch(toggleNextQuestion(currentQuestion.id));
+                            } else {
+                                handleSubmit();
+                            }
                         }}
-                        disabled={!nextId}
                         aria-label="Go forward"
                     >
                         <IoIosArrowBack className="rotate-180" />

@@ -1,22 +1,28 @@
 'use client'
 
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { updateQuestion } from "@/store/slices/formSlice";
+import { useAppDispatch } from "@/store/hooks";
+import { changeQuestionType, updateQuestion } from "@/store/slices/formSlice";
 import { hasDuplicateOptions } from "@/utils/validators";
-import { Question } from "@/schemas/form.schema";
-import { Options } from "@/components/builder/FormOptions";
+import { QuestionType } from "@/schemas/form.schema";
 import { AlertCircle, Calendar, CheckSquare, Hash, ListFilter, Mail, SlidersHorizontal, Star, Type } from "lucide-react";
 import clsx from "clsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import getDefaultExpectedValue from "@/utils/getDefaultExpectedValue";
+import { useActiveQuestion } from "@/hooks/useActiveQuestion";
+import DateQuestionField from "../renderer/FormRendererFields/DateQuestionField";
+import { getArrayAnswer, getNumberAnswer, getStringAnswer } from "@/utils/answerGetters";
 
 export default function QuestionSettings({ className }: { className?: string }) {
-    const questions = useAppSelector(state => state.form.questions);
-    const activeQuestionId = useAppSelector(state => state.form.activeQuestionId);
     const dispatch = useAppDispatch();
-
-    const activeQuestion = questions.find((question) => question.id === activeQuestionId);
-    const activeQuestionIndex = questions.findIndex((question) => question.id === activeQuestionId);
-    const activeQuestionHasCondition = Boolean(activeQuestion?.condition);
+    const {
+        questions, 
+        activeQuestion,
+        questionNumber,
+        isFirstQuestion,
+        previousQuestions,
+        activeQuestionHasCondition, 
+        previousQuestion, 
+    } = useActiveQuestion();
 
     if (!activeQuestion) {
         return (
@@ -34,25 +40,6 @@ export default function QuestionSettings({ className }: { className?: string }) 
         );
     }
 
-    function handleChangeQuestionType(newType: Options) {
-        if (!activeQuestion) return;
-
-        const updates: Partial<Question> = { type: newType };
-
-        if (!activeQuestion.options && (newType === Options.CHOICE || newType === Options.CHECKBOX)) {
-            updates.options = [{ id: crypto.randomUUID(), value: "Option 1" }];
-        }
-
-        if (activeQuestion.options && newType !== Options.CHECKBOX && newType !== Options.CHOICE) {
-            updates.options = undefined;
-        }
-
-        dispatch(updateQuestion({
-            id: activeQuestion.id,
-            updates,
-        }));
-    }
-
     function handleToggleCondition() {
         if (!activeQuestion) return;
 
@@ -64,16 +51,9 @@ export default function QuestionSettings({ className }: { className?: string }) 
                 }
             }));
         } else {
-            const previousQuestion = questions[activeQuestionIndex - 1];
-            let initialExpectedValue: string | number | string[] = "";
+            if (!previousQuestion) return;
 
-            if (previousQuestion.type === Options.CHECKBOX) {
-                initialExpectedValue = [];
-            } else if (previousQuestion.type === Options.RATING) {
-                initialExpectedValue = 1;
-            } else if (previousQuestion.type === Options.NPS) {
-                initialExpectedValue = 10;
-            }
+            const initialExpectedValue = getDefaultExpectedValue(previousQuestion.type);
 
             dispatch(updateQuestion({
                 id: activeQuestion.id,
@@ -88,18 +68,12 @@ export default function QuestionSettings({ className }: { className?: string }) 
     }
 
     function handleChangeTargetQuestion(newTargetId: string) {
-        if (!activeQuestion?.condition) return;
+        if (!activeQuestion || !activeQuestionHasCondition) return;
 
         const targetQuestion = questions.find(q => q.id === newTargetId);
-        let newExpectedValue: string | number | string[] = "";
+        if (!targetQuestion) return;
 
-        if (targetQuestion?.type === Options.CHECKBOX) {
-            newExpectedValue = [];
-        } else if (targetQuestion?.type === Options.RATING) {
-            newExpectedValue = 1;
-        } else if (targetQuestion?.type === Options.NPS) {
-            newExpectedValue = 10;
-        }
+        const newExpectedValue = getDefaultExpectedValue(targetQuestion.type);
 
         dispatch(updateQuestion({
             id: activeQuestion.id,
@@ -115,17 +89,15 @@ export default function QuestionSettings({ className }: { className?: string }) 
 
     return (
         <aside className={className || "w-80 bg-white border-l border-zinc-200/80 p-6 h-[calc(100vh-4rem)] overflow-y-auto flex flex-col gap-6 select-none scrollbar-thin scrollbar-thumb-zinc-200"}>
-            {/* Header / Title & Active Question Badge */}
             <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                     Question Settings
                 </span>
                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">
-                    Q{activeQuestionIndex + 1} of {questions.length}
+                    Q{questionNumber} of {questions.length}
                 </span>
             </div>
 
-            {/* Question Title */}
             <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-700">Question Title</label>
                 <input
@@ -138,7 +110,6 @@ export default function QuestionSettings({ className }: { className?: string }) 
                 />
             </div>
 
-            {/* Required Switch */}
             <div className="flex justify-between items-center py-2 border-y border-zinc-100">
                 <label htmlFor="required-checkbox" className="text-xs font-semibold text-zinc-700 cursor-pointer select-none">
                     Required Field
@@ -160,51 +131,50 @@ export default function QuestionSettings({ className }: { className?: string }) 
                 </div>
             </div>
 
-            {/* Question Type */}
             <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-700">Question Type</label>
-                <Select value={activeQuestion.type} onValueChange={(val) => handleChangeQuestionType(val as Options)}>
+                <Select value={activeQuestion.type} onValueChange={(val) => dispatch(changeQuestionType(val as QuestionType))}>
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select type..." />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value={Options.TEXT}>
+                        <SelectItem value={QuestionType.TEXT}>
                             <span className="flex items-center gap-2">
                                 <Type className="h-3.5 w-3.5 text-zinc-500" />
                                 <span>Text Answer</span>
                             </span>
                         </SelectItem>
-                        <SelectItem value={Options.CHOICE}>
+                        <SelectItem value={QuestionType.CHOICE}>
                             <span className="flex items-center gap-2">
                                 <ListFilter className="h-3.5 w-3.5 text-zinc-500" />
                                 <span>Single Choice (Radio)</span>
                             </span>
                         </SelectItem>
-                        <SelectItem value={Options.CHECKBOX}>
+                        <SelectItem value={QuestionType.CHECKBOX}>
                             <span className="flex items-center gap-2">
                                 <CheckSquare className="h-3.5 w-3.5 text-zinc-500" />
                                 <span>Multiple Choice (Checkbox)</span>
                             </span>
                         </SelectItem>
-                        <SelectItem value={Options.RATING}>
+                        <SelectItem value={QuestionType.RATING}>
                             <span className="flex items-center gap-2">
                                 <Star className="h-3.5 w-3.5 text-zinc-500" />
                                 <span>Rating (1-5 Stars)</span>
                             </span>
                         </SelectItem>
-                        <SelectItem value={Options.NPS}>
+                        <SelectItem value={QuestionType.NPS}>
                             <span className="flex items-center gap-2">
                                 <Hash className="h-3.5 w-3.5 text-zinc-500" />
                                 <span>NPS Scale (0-10)</span>
                             </span>
                         </SelectItem>
-                        <SelectItem value={Options.EMAIL}>
+                        <SelectItem value={QuestionType.EMAIL}>
                             <span className="flex items-center gap-2">
                                 <Mail className="h-3.5 w-3.5 text-zinc-500" />
                                 <span>Email Address</span>
                             </span>
                         </SelectItem>
-                        <SelectItem value={Options.DATE}>
+                        <SelectItem value={QuestionType.DATE}>
                             <span className="flex items-center gap-2">
                                 <Calendar className="h-3.5 w-3.5 text-zinc-500" />
                                 <span>Date Picker</span>
@@ -214,13 +184,12 @@ export default function QuestionSettings({ className }: { className?: string }) 
                 </Select>
             </div>
 
-            {/* Logic & Branching Section */}
             <div className="space-y-3 pt-2 border-t border-zinc-100">
                 <div className="flex justify-between items-center">
                     <div>
                         <p className="text-xs font-semibold text-zinc-900">Conditional Logic</p>
                         <p className="text-[11px] text-zinc-400">
-                            {activeQuestionIndex === 0
+                            {isFirstQuestion
                                 ? "Available from question #2"
                                 : "Show only if condition is met"
                             }
@@ -234,7 +203,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                             className="peer appearance-none w-10 h-5 bg-zinc-200 border border-zinc-300 rounded-full checked:bg-zinc-900 checked:border-zinc-900 cursor-pointer transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                             checked={activeQuestionHasCondition}
                             onChange={handleToggleCondition}
-                            disabled={activeQuestionIndex === 0}
+                            disabled={previousQuestions.length === 0}
                         />
                         <span
                             className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-xs transition-transform duration-200 peer-checked:translate-x-5 pointer-events-none"
@@ -261,10 +230,9 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                     <SelectValue placeholder="Select a question" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {questions
-                                        .slice(0, activeQuestionIndex)
-                                        .map((question) => (
-                                            <SelectItem key={question.id} value={question.id}>{question.title || `Question ${questions.indexOf(question) + 1}`}</SelectItem>
+                                    {previousQuestions
+                                        .map((question, index) => (
+                                            <SelectItem key={question.id} value={question.id}>{question.title || `Question ${index + 1}`}</SelectItem>
                                         ))
                                     }
                                 </SelectContent>
@@ -274,14 +242,14 @@ export default function QuestionSettings({ className }: { className?: string }) 
                         {questions
                             .filter((q) => q.id === activeQuestion.condition?.targetQuestionId)
                             .map((question) => {
-                                if (question.type === Options.TEXT) {
+                                if (question.type === QuestionType.TEXT) {
                                     return (
                                         <div key={question.id} className="space-y-1.5">
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all shadow-2xs cursor-pointer"
-                                                value={typeof activeQuestion.condition?.expectedValue === "string" ? activeQuestion.condition.expectedValue : ""}
+                                                value={getStringAnswer(activeQuestion.condition?.expectedValue)}
                                                 onChange={(e) => {
                                                     if (!activeQuestion.condition) return;
 
@@ -299,14 +267,14 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             />
                                         </div>
                                     );
-                                } else if (question.type === Options.CHOICE) {
+                                } else if (question.type === QuestionType.CHOICE) {
                                     const chars = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
                                     return (
                                         <div key={question.id} className="space-y-1.5">
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to option</label>
                                             <div className="flex flex-col gap-1.5 pt-0.5">
                                                 {question.options?.map(({ id, value }, index) => {
-                                                    const isChecked = activeQuestion.condition?.expectedValue === value;
+                                                    const isChecked = getStringAnswer(activeQuestion.condition?.expectedValue) === value;
                                                     const charLabel = chars[index] || String(index + 1);
 
                                                     return (
@@ -346,17 +314,15 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             </div>
                                         </div>
                                     );
-                                } else if (question.type === Options.CHECKBOX) {
+                                } else if (question.type === QuestionType.CHECKBOX) {
                                     const chars = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
-                                    const currentExpectedValue = activeQuestion.condition?.expectedValue;
-                                    const isExpectedValueArray = Array.isArray(currentExpectedValue);
 
                                     return (
                                         <div key={question.id} className="space-y-1.5">
                                             <label className="text-xs font-semibold text-zinc-700">Includes option(s)</label>
                                             <div className="flex flex-col gap-1.5 pt-0.5">
                                                 {question.options?.map(({ id, value }, index) => {
-                                                    const isChecked = isExpectedValueArray ? currentExpectedValue.includes(value) : false;
+                                                    const isChecked = getArrayAnswer(activeQuestion.condition?.expectedValue).includes(value);
                                                     const charLabel = chars[index] || String(index + 1);
 
                                                     return (
@@ -409,7 +375,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             </div>
                                         </div>
                                     );
-                                } else if (question.type === Options.RATING) {
+                                } else if (question.type === QuestionType.RATING) {
                                     const currentRating = typeof activeQuestion.condition?.expectedValue === "number"
                                         ? activeQuestion.condition.expectedValue
                                         : 1;
@@ -419,8 +385,8 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to rating</label>
                                             <div className="w-full flex flex-col items-center gap-2 pt-1">
                                                 <div className="flex items-center gap-1">
-                                                    {[1, 2, 3, 4, 5].map((star, index) => {
-                                                        const isSelected = index <= currentRating - 1;
+                                                    {[1, 2, 3, 4, 5].map((star) => {
+                                                        const isSelected = getNumberAnswer(star) <= currentRating;
                                                         return (
                                                             <button
                                                                 key={star}
@@ -434,7 +400,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                                         updates: {
                                                                             condition: {
                                                                                 ...activeQuestion.condition,
-                                                                                expectedValue: index + 1,
+                                                                                expectedValue: star,
                                                                             }
                                                                         }
                                                                     }));
@@ -455,7 +421,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             </div>
                                         </div>
                                     );
-                                } else if (question.type === Options.NPS) {
+                                } else if (question.type === QuestionType.NPS) {
                                     return (
                                         <div key={question.id} className="space-y-2">
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to score</label>
@@ -463,7 +429,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                 {/* Row 1: 0 - 5 */}
                                                 <div className="flex items-center justify-between gap-1">
                                                     {[0, 1, 2, 3, 4, 5].map((val) => {
-                                                        const isSelected = activeQuestion.condition?.expectedValue === val;
+                                                        const isSelected = getNumberAnswer(activeQuestion.condition?.expectedValue) === val;
                                                         return (
                                                             <button
                                                                 key={val}
@@ -494,10 +460,9 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                     })}
                                                 </div>
 
-                                                {/* Row 2: 6 - 10 */}
                                                 <div className="flex items-center justify-center gap-2">
                                                     {[6, 7, 8, 9, 10].map((val) => {
-                                                        const isSelected = activeQuestion.condition?.expectedValue === val;
+                                                        const isSelected = getNumberAnswer(activeQuestion.condition?.expectedValue)  === val;
                                                         return (
                                                             <button
                                                                 key={val}
@@ -528,7 +493,6 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                     })}
                                                 </div>
 
-                                                {/* Labels */}
                                                 <div className="flex items-center justify-between text-[10px] text-zinc-400 font-medium px-1 pt-0.5">
                                                     <span>0 - Not likely</span>
                                                     <span>10 - Very likely</span>
@@ -536,7 +500,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             </div>
                                         </div>
                                     );
-                                } else if (question.type === Options.EMAIL) {
+                                } else if (question.type === QuestionType.EMAIL) {
                                     return (
                                         <div key={question.id} className="space-y-1.5">
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to email</label>
@@ -544,7 +508,7 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                 type="email"
                                                 placeholder="e.g. alex@company.com"
                                                 className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all shadow-2xs"
-                                                value={typeof activeQuestion.condition?.expectedValue === "string" ? activeQuestion.condition.expectedValue : ""}
+                                                value={getStringAnswer(activeQuestion.condition?.expectedValue)}
                                                 onChange={(e) => {
                                                     if (!activeQuestion.condition) return;
                                                     dispatch(updateQuestion({
@@ -560,14 +524,12 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                             />
                                         </div>
                                     );
-                                } else if (question.type === Options.DATE) {
+                                } else if (question.type === QuestionType.DATE) {
                                     return (
                                         <div key={question.id} className="space-y-1.5">
                                             <label className="text-xs font-semibold text-zinc-700">Is equal to date</label>
-                                            <input
-                                                type="date"
-                                                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all shadow-2xs cursor-pointer"
-                                                value={typeof activeQuestion.condition?.expectedValue === "string" ? activeQuestion.condition.expectedValue : ""}
+                                            <DateQuestionField 
+                                                selectedValue={getStringAnswer(activeQuestion.condition?.expectedValue)}
                                                 onChange={(e) => {
                                                     if (!activeQuestion.condition) return;
                                                     dispatch(updateQuestion({
@@ -575,11 +537,12 @@ export default function QuestionSettings({ className }: { className?: string }) 
                                                         updates: {
                                                             condition: {
                                                                 ...activeQuestion.condition,
-                                                                expectedValue: e.target.value,
+                                                                expectedValue: e,
                                                             }
                                                         }
                                                     }))
                                                 }}
+                                                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 transition-all shadow-2xs cursor-pointer"
                                             />
                                         </div>
                                     );

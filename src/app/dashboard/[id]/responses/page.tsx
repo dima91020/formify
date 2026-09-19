@@ -1,7 +1,7 @@
 import {prisma} from "@/lib/prisma";
 import {notFound} from "next/navigation";
 import {FormContent, Question} from "@/schemas/form.schema";
-import {Answers} from "@/actions/response.actions";
+import { Answers } from "@/schemas/response.schema";
 
 export default async function ResponsesPage({params}: {params: Promise<{id: string}>}) {
     const { id } = await params;
@@ -35,7 +35,7 @@ export default async function ResponsesPage({params}: {params: Promise<{id: stri
                     <div key={response.id} className="bg-gray-300 rounded-lg px-4 py-6 text-black w-full">
                         <p className="">{`${response.createdAt.toLocaleDateString('UK-ua')}, ${response.createdAt.toLocaleTimeString('UK-ua')}`}</p>
                         <div>{response.answers && Object.entries(response.answers as Answers).map(([id, answer]) => {
-                            const answerBody = Array.isArray(answer) ?  answer.join(', ') : answer;
+                            const answerBody = Array.isArray(answer.value) ?  answer.value.join(', ') : answer.value;
 
                             return (
                                 <div key={id}>

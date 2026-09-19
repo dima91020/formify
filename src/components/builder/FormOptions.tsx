@@ -4,15 +4,6 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useSortable } from "@dnd-kit/sortable";
 import { GripVertical, X } from "lucide-react";
 
-export enum Options {
-    TEXT = "TEXT",
-    CHOICE = "CHOICE",
-    CHECKBOX = "CHECKBOX",
-    RATING = "RATING",
-    NPS = "NPS",
-    EMAIL = "EMAIL",
-    DATE = "DATE",
-}
 
 export default function FormOptions({ optionId, optionValue, index }: { optionId: string; optionValue: string; index: number }) {
     const dispatch = useAppDispatch();
